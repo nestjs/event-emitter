@@ -26,7 +26,7 @@
 
 ## Description
 
-Events module for [Nest](https://github.com/nestjs/nest).
+Events module for [Nest](https://github.com/nestjs/nest) built on top of the [eventemitter2](https://github.com/EventEmitter2/EventEmitter2) package.
 
 ## Installation
 
