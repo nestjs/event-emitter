@@ -1,11 +1,16 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+} from '@nestjs/common';
 import { DiscoveryService, MetadataScanner } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { EventEmitter2 } from 'eventemitter2';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
 
 @Injectable()
-export class EventSubscribersLoader implements OnModuleInit, OnModuleDestroy {
+export class EventSubscribersLoader
+  implements OnApplicationBootstrap, OnApplicationShutdown {
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly eventEmitter: EventEmitter2,
@@ -13,11 +18,11 @@ export class EventSubscribersLoader implements OnModuleInit, OnModuleDestroy {
     private readonly metadataScanner: MetadataScanner,
   ) {}
 
-  onModuleInit() {
+  onApplicationBootstrap() {
     this.loadEventListeners();
   }
 
-  onModuleDestroy() {
+  onApplicationShutdown() {
     this.eventEmitter.removeAllListeners();
   }
 
