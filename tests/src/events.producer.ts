@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { EventEmitter2 } from 'eventemitter2';
 
 @Injectable()
-export class EventsProducer implements OnModuleInit {
+export class EventsProducer implements OnApplicationBootstrap {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  onModuleInit() {
+  onApplicationBootstrap() {
     this.eventEmitter.emit('test.event', { test: 'event' });
   }
 }
