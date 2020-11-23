@@ -64,6 +64,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nestjs/events"
+    "url": "https://github.com/nestjs/event-emitter"
   }
 }
