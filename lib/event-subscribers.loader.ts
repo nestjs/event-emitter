@@ -55,10 +55,20 @@ export class EventSubscribersLoader
       return;
     }
     const { event, options } = eventListenerMetadata;
-    this.eventEmitter.on(
-      event,
-      (...args: unknown[]) => instance[methodKey].call(instance, ...args),
-      options,
-    );
+    if (Array.isArray(event)) {
+      for (const e of event) {
+        this.eventEmitter.on(
+            e,
+            (...args: unknown[]) => instance[methodKey].call(instance, ...args),
+            options,
+        );
+      }
+    } else {
+      this.eventEmitter.on(
+          event,
+          (...args: unknown[]) => instance[methodKey].call(instance, ...args),
+          options,
+      );
+    }
   }
 }
