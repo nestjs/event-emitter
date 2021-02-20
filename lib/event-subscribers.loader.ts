@@ -28,7 +28,8 @@ export class EventSubscribersLoader
 
   loadEventListeners() {
     const providers = this.discoveryService.getProviders();
-    providers
+    const controllers = this.discoveryService.getControllers();
+    [...providers, ...controllers]
       .filter(wrapper => wrapper.isDependencyTreeStatic())
       .filter(wrapper => wrapper.instance)
       .forEach((wrapper: InstanceWrapper) => {
