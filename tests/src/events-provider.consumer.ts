@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '../../lib';
 
 @Injectable()
-export class EventsConsumer {
+export class EventsProviderConsumer {
   public eventPayload = {};
 
   @OnEvent('test.*')
