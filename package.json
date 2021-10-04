@@ -19,7 +19,7 @@
     "release": "release-it"
   },
   "dependencies": {
-    "eventemitter2": "6.4.4"
+    "eventemitter2": "6.4.5"
   },
   "devDependencies": {
     "@commitlint/cli": "13.2.0",
