@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf -rf dist && tsc -p tsconfig.json",
+    "format": "prettier --write \"{lib,test}/**/*.ts\"",
     "lint": "eslint 'lib/**/*.ts' --fix",
     "prepublish:npm": "npm run build",
     "publish:npm": "npm publish --access public",
