@@ -10,7 +10,8 @@ import { EventsMetadataAccessor } from './events-metadata.accessor';
 
 @Injectable()
 export class EventSubscribersLoader
-  implements OnApplicationBootstrap, OnApplicationShutdown {
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly eventEmitter: EventEmitter2,
