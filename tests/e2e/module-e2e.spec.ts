@@ -1,7 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { EventEmitter2 } from 'eventemitter2';
 import { AppModule } from '../src/app.module';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
+import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
 
 describe('EventEmitterModule - e2e', () => {
@@ -28,6 +30,15 @@ describe('EventEmitterModule - e2e', () => {
 
     expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
   });
+
+  it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
+    const eventsConsumerRef = app.get(EventsProviderPrependConsumer);
+    const prependListenerSpy = jest.spyOn(app.get(EventEmitter2), 'prependListener');
+    await app.init();
+
+    expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
+    expect(prependListenerSpy).toHaveBeenCalled();
+  })
 
   afterEach(async () => {
     await app.close();

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '../../lib';
 import { EventsControllerConsumer } from './events-controller.consumer';
+import { EventsProviderPrependConsumer } from './events-provider-prepend.consumer';
 import { EventsProviderConsumer } from './events-provider.consumer';
 import { EventsProducer } from './events.producer';
 
@@ -11,6 +12,6 @@ import { EventsProducer } from './events.producer';
     }),
   ],
   controllers: [EventsControllerConsumer],
-  providers: [EventsProviderConsumer, EventsProducer],
+  providers: [EventsProviderConsumer, EventsProviderPrependConsumer, EventsProducer],
 })
 export class AppModule {}
