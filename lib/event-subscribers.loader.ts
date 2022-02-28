@@ -57,7 +57,11 @@ export class EventSubscribersLoader
       return;
     }
     const { event, options } = eventListenerMetadata;
-    this.eventEmitter.on(
+    const listenerMethod = !!options?.prependListener
+      ? this.eventEmitter.prependListener.bind(this.eventEmitter)
+      : this.eventEmitter.on.bind(this.eventEmitter);
+
+    listenerMethod(
       event,
       (...args: unknown[]) => instance[methodKey].call(instance, ...args),
       options,

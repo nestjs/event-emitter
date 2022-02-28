@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
-import { OnOptions } from 'eventemitter2';
 import { EVENT_LISTENER_METADATA } from '../constants';
+import { OnEventOptions } from '../interfaces';
 
 /**
  * `@OnEvent` decorator metadata
@@ -13,7 +13,7 @@ export interface OnEventMetadata {
   /**
    * Subscription options.
    */
-  options?: OnOptions;
+  options?: OnEventOptions;
 }
 
 /**
@@ -24,6 +24,6 @@ export interface OnEventMetadata {
  */
 export const OnEvent = (
   event: string | symbol | Array<string | symbol>,
-  options?: OnOptions,
+  options?: OnEventOptions,
 ): MethodDecorator =>
   SetMetadata(EVENT_LISTENER_METADATA, { event, options } as OnEventMetadata);
