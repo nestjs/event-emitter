@@ -5,15 +5,14 @@ import { AppModule } from '../src/app.module';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
+import { TEST_PROVIDER_TOKEN, TestProvider } from '../src/test-provider';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;
-
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = module.createNestApplication();
   });
 
@@ -33,12 +32,32 @@ describe('EventEmitterModule - e2e', () => {
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
     const eventsConsumerRef = app.get(EventsProviderPrependConsumer);
-    const prependListenerSpy = jest.spyOn(app.get(EventEmitter2), 'prependListener');
+    const prependListenerSpy = jest.spyOn(
+      app.get(EventEmitter2),
+      'prependListener',
+    );
     await app.init();
 
     expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
     expect(prependListenerSpy).toHaveBeenCalled();
-  })
+  });
+
+  it('module work with null prototype provider value', async () => {
+    const moduleWithNullProvider = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(TEST_PROVIDER_TOKEN)
+      .useFactory({
+        factory: () => {
+          const testObject = { a: 13, b: 7 };
+          Object.setPrototypeOf(testObject, null);
+          return testObject;
+        },
+      })
+      .compile();
+    app = moduleWithNullProvider.createNestApplication();
+    await expect(app.init()).resolves.not.toThrow();
+  });
 
   afterEach(async () => {
     await app.close();

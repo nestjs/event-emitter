@@ -34,9 +34,13 @@ export class EventSubscribersLoader
       .filter(wrapper => wrapper.isDependencyTreeStatic())
       .filter(wrapper => wrapper.instance)
       .forEach((wrapper: InstanceWrapper) => {
-        const { instance } = wrapper;
-
-        const prototype = Object.getPrototypeOf(instance);
+        let { instance } = wrapper;
+        let prototype = Object.getPrototypeOf(instance);
+        if (prototype === null) {
+          const stringifiedInstance = JSON.stringify(instance);
+          instance = JSON.parse(stringifiedInstance);
+          prototype = Object.getPrototypeOf(instance);
+        }
         this.metadataScanner.scanFromPrototype(
           instance,
           prototype,
