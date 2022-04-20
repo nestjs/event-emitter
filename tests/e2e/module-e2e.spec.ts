@@ -5,7 +5,7 @@ import { AppModule } from '../src/app.module';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
-import { TEST_PROVIDER_TOKEN, TestProvider } from '../src/test-provider';
+import { TEST_PROVIDER_TOKEN } from '../src/test-provider';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;
