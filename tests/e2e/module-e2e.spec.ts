@@ -9,10 +9,12 @@ import { TEST_PROVIDER_TOKEN } from '../src/test-provider';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+
     app = module.createNestApplication();
   });
 
@@ -32,10 +34,7 @@ describe('EventEmitterModule - e2e', () => {
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
     const eventsConsumerRef = app.get(EventsProviderPrependConsumer);
-    const prependListenerSpy = jest.spyOn(
-      app.get(EventEmitter2),
-      'prependListener',
-    );
+    const prependListenerSpy = jest.spyOn(app.get(EventEmitter2),'prependListener');
     await app.init();
 
     expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
