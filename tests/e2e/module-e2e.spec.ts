@@ -41,7 +41,7 @@ describe('EventEmitterModule - e2e', () => {
     expect(prependListenerSpy).toHaveBeenCalled();
   });
 
-  it('module work with null prototype provider value', async () => {
+  it('should work with null prototype provider value', async () => {
     const moduleWithNullProvider = await Test.createTestingModule({
       imports: [AppModule],
     })
