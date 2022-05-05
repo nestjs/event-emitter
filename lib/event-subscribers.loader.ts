@@ -35,8 +35,7 @@ export class EventSubscribersLoader
       .filter(wrapper => wrapper.instance)
       .forEach((wrapper: InstanceWrapper) => {
         const { instance } = wrapper;
-
-        const prototype = Object.getPrototypeOf(instance);
+        const prototype = Object.getPrototypeOf(instance) || {};
         this.metadataScanner.scanFromPrototype(
           instance,
           prototype,
