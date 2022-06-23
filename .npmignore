@@ -12,5 +12,8 @@ tsconfig.json
 CONTRIBUTING.md
 renovate.json
 
-# ci
-.circleci
+# dev
+.idea
+.eslintignore
+.eslintrc.js
+.release-it.json
