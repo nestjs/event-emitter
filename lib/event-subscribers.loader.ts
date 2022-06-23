@@ -3,7 +3,7 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
-import {ContextId, ContextIdFactory, DiscoveryService, MetadataScanner, ModuleRef} from '@nestjs/core';
+import { DiscoveryService, MetadataScanner, ModuleRef} from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { EventEmitter2 } from 'eventemitter2';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
@@ -31,23 +31,23 @@ export class EventSubscribersLoader
   loadEventListeners() {
     const providers = this.discoveryService.getProviders();
     const controllers = this.discoveryService.getControllers();
-    const ctx = ContextIdFactory.create();
 
     [...providers, ...controllers]
       .forEach((wrapper: InstanceWrapper) => {
           if (wrapper.isDependencyTreeStatic() && wrapper.instance) {
             this.subscribeSingleton(wrapper);
           } else {
-            this.subscribeScoped(wrapper, ctx);
+            this.subscribeScoped(wrapper);
           }
       });
+
   }
 
-  private subscribeScoped(wrapper: InstanceWrapper, ctx: ContextId) {
-    const prototype = wrapper.createPrototype(ctx);
+  private subscribeScoped(wrapper: InstanceWrapper) {
+    const prototype = wrapper.metatype.prototype;
     if(!prototype)
       return;
-    const instance = wrapper.getInstanceByContextId(ctx).instance;
+    const instance = Object.create(prototype);
 
     this.metadataScanner.scanFromPrototype(
         instance,
