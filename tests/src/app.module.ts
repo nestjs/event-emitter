@@ -5,6 +5,8 @@ import { EventsProviderPrependConsumer } from './events-provider-prepend.consume
 import { EventsProviderConsumer } from './events-provider.consumer';
 import { EventsProducer } from './events.producer';
 import { TestProvider } from './test-provider';
+import {EventsProducerScoped} from "./events.producer-scoped";
+import {EventsProviderConsumerScoped, ServiceHandler} from "./events-provider-scoped.consumer";
 
 @Module({
   imports: [
@@ -18,6 +20,9 @@ import { TestProvider } from './test-provider';
     EventsProviderPrependConsumer,
     EventsProducer,
     TestProvider,
+    EventsProducerScoped,
+    EventsProviderConsumerScoped,
+    ServiceHandler
   ],
 })
 export class AppModule {}
