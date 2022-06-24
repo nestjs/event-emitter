@@ -1,6 +1,6 @@
 {
   "name": "@makersights/event-emitter-scoped",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Nest - modern, fast, powerful node.js web framework (@event-emitter)",
   "authors": [
     "Kamil Mysliwiec",
