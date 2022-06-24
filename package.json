@@ -1,23 +1,21 @@
 {
-  "name": "@nestjs/event-emitter",
-  "version": "1.1.1",
+  "name": "@makersights/event-emitter-scoped",
+  "version": "1.1.6",
   "description": "Nest - modern, fast, powerful node.js web framework (@event-emitter)",
-  "author": "Kamil Mysliwiec",
+  "authors": [
+    "Kamil Mysliwiec",
+    "Kirill Ivanov"
+  ],
   "license": "MIT",
-  "url": "https://github.com/nestjs/event-emitter#readme",
+  "url": "https://github.com/MakerSights/event-emitter-scoped#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf -rf dist && tsc -p tsconfig.json",
     "format": "prettier --write \"{lib,test}/**/*.ts\"",
     "lint": "eslint 'lib/**/*.ts' --fix",
-    "prepublish:npm": "npm run build",
-    "publish:npm": "npm publish --access public",
-    "prepublish:next": "npm run build",
-    "publish:next": "npm publish --access public --tag next",
-    "test:e2e": "jest --config ./tests/jest-e2e.json --runInBand",
-    "prerelease": "npm run build",
-    "release": "release-it"
+    "prepublish": "npm test && npm run lint",
+    "test": "jest --config ./tests/jest-e2e.json --runInBand"
   },
   "dependencies": {
     "eventemitter2": "6.4.5"
@@ -65,6 +63,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nestjs/event-emitter"
+    "url": "https://github.com/MakerSights/event-emitter-scoped"
   }
 }
