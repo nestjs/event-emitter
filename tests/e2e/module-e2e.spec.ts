@@ -7,7 +7,6 @@ import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.co
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
 import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer';
 import { TEST_PROVIDER_TOKEN } from '../src/test-provider';
-import { EVENT_REF } from '../../lib';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;
