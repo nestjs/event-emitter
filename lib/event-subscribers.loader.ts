@@ -10,10 +10,14 @@ import {
   ModuleRef,
 } from '@nestjs/core';
 import { Injector } from '@nestjs/core/injector/injector';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
+import {
+  ContextId,
+  InstanceWrapper,
+} from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
 import { EventEmitter2 } from 'eventemitter2';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
+import { OnEventOptions } from './interfaces';
 
 @Injectable()
 export class EventSubscribersLoader
@@ -72,31 +76,19 @@ export class EventSubscribersLoader
     if (!eventListenerMetadata) {
       return;
     }
+
     const { event, options } = eventListenerMetadata;
-    const listenerMethod = !!options?.prependListener
-      ? this.eventEmitter.prependListener.bind(this.eventEmitter)
-      : this.eventEmitter.on.bind(this.eventEmitter);
+    const listenerMethod = this.registerListenerMethodBasedOn(options);
 
     if (isRequestScoped) {
-      listenerMethod(
+      this.registerRequestScopedListener({
         event,
-        async (...args: unknown[]) => {
-          const contextId = ContextIdFactory.create();
-          this.moduleRef.registerRequestByContextId(
-            args.length > 1 ? args : args[0],
-            contextId,
-          );
-
-          const contextInstance = await this.injector.loadPerContext(
-            instance,
-            moduleRef,
-            moduleRef.providers,
-            contextId,
-          );
-          return contextInstance[methodKey].call(contextInstance, ...args);
-        },
+        eventListenerInstance: instance,
+        listenerMethod,
+        listenerMethodKey: methodKey,
+        moduleRef,
         options,
-      );
+      });
     } else {
       listenerMethod(
         event,
@@ -104,5 +96,75 @@ export class EventSubscribersLoader
         options,
       );
     }
+  }
+
+  private registerListenerMethodBasedOn(options?: OnEventOptions) {
+    return Boolean(options?.prependListener)
+      ? this.eventEmitter.prependListener.bind(this.eventEmitter)
+      : this.eventEmitter.on.bind(this.eventEmitter);
+  }
+
+  private async registerRequestScopedListener(eventListenerContext: {
+    listenerMethod: EventEmitter2['on'];
+    event: string | symbol | (string | symbol)[];
+    eventListenerInstance: Record<string, any>;
+    moduleRef: Module;
+    listenerMethodKey: string;
+    options?: OnEventOptions;
+  }) {
+    const {
+      listenerMethod,
+      event,
+      eventListenerInstance,
+      moduleRef,
+      listenerMethodKey,
+      options,
+    } = eventListenerContext;
+
+    listenerMethod(
+      event,
+      async (...args: unknown[]) => {
+        const contextId = ContextIdFactory.create();
+
+        this.registerEventPayloadByContextId(args, contextId);
+
+        const contextInstance = await this.injector.loadPerContext(
+          eventListenerInstance,
+          moduleRef,
+          moduleRef.providers,
+          contextId,
+        );
+        return contextInstance[listenerMethodKey].call(
+          contextInstance,
+          ...args,
+        );
+      },
+      options,
+    );
+  }
+
+  private registerEventPayloadByContextId(
+    eventPayload: unknown[],
+    contextId: ContextId,
+  ) {
+    /*
+      **Required explanation for the ternary below**
+
+      We need the conditional below because an event can be emitted with a variable amount of arguments.
+      For instance, we can do `this.eventEmitter.emit('event', 'payload1', 'payload2', ..., 'payloadN');` 
+      
+      All payload arguments are internally stored as an array. So, imagine we emitted an event as follows:
+
+      `this.eventEmitter.emit('event', 'payload');
+      
+      if we registered the original `eventPayload`, when we try to inject it in a listener, it'll be retrieved as [`event`].
+      However, whoever is using this library would certainly expect the event payload to be a single object, not an array,
+      since this is what we emitted above.
+    */
+
+    const payloadObjectOrArray =
+      eventPayload.length > 1 ? eventPayload : eventPayload[0];
+
+    this.moduleRef.registerRequestByContextId(payloadObjectOrArray, contextId);
   }
 }
