@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '../../lib';
-import { EVENT_REF } from '../../lib';
+import { EVENT_PAYLOAD } from '../../lib';
 
 @Injectable()
 export class EventsProviderRequestScopedConsumer {
-  constructor(@Inject(EVENT_REF) public eventRef: any) {
+  constructor(@Inject(EVENT_PAYLOAD) public eventRef: any) {
     if (Array.isArray(this.eventRef)) {
       EventsProviderRequestScopedConsumer.injectedEventMultiPayload =
         this.eventRef;
