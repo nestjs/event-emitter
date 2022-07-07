@@ -7,5 +7,10 @@ export class EventsProducer implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.eventEmitter.emit('test.event', { test: 'event' });
+    this.eventEmitter.emit(
+      'multiple.event',
+      { test: 'event' },
+      { test2: 'event2' },
+    );
   }
 }
