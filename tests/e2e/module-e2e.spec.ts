@@ -2,6 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
 import { AppModule } from '../src/app.module';
+import {
+  TEST_EVENT_MULTIPLE_PAYLOAD,
+  TEST_EVENT_PAYLOAD,
+  TEST_EVENT_STRING_PAYLOAD,
+} from '../src/constants';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
@@ -23,14 +28,14 @@ describe('EventEmitterModule - e2e', () => {
     const eventsConsumerRef = app.get(EventsProviderConsumer);
     await app.init();
 
-    expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
+    expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
   });
 
   it(`should emit a "test-event" event to controllers`, async () => {
     const eventsConsumerRef = app.get(EventsControllerConsumer);
     await app.init();
 
-    expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
+    expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
   });
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
@@ -41,7 +46,7 @@ describe('EventEmitterModule - e2e', () => {
     );
     await app.init();
 
-    expect(eventsConsumerRef.eventPayload).toEqual({ test: 'event' });
+    expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
     expect(prependListenerSpy).toHaveBeenCalled();
   });
 
@@ -65,9 +70,9 @@ describe('EventEmitterModule - e2e', () => {
   it('should be able to emit a request-scoped event with a single payload', async () => {
     await app.init();
 
-    expect(EventsProviderRequestScopedConsumer.injectedEventPayload).toEqual({
-      test: 'event',
-    });
+    expect(EventsProviderRequestScopedConsumer.injectedEventPayload).toEqual(
+      TEST_EVENT_PAYLOAD,
+    );
   });
 
   it('should be able to emit a request-scoped event with a string payload', async () => {
@@ -75,7 +80,7 @@ describe('EventEmitterModule - e2e', () => {
 
     expect(
       EventsProviderRequestScopedConsumer.injectedEventStringPayload,
-    ).toEqual('some-string');
+    ).toEqual(TEST_EVENT_STRING_PAYLOAD);
   });
 
   it('should be able to emit a request-scoped event with multiple payloads', async () => {
@@ -83,14 +88,7 @@ describe('EventEmitterModule - e2e', () => {
 
     expect(
       EventsProviderRequestScopedConsumer.injectedEventMultiPayload,
-    ).toEqual([
-      {
-        test: 'event',
-      },
-      {
-        test2: 'event2',
-      },
-    ]);
+    ).toEqual(TEST_EVENT_MULTIPLE_PAYLOAD);
   });
 
   afterEach(async () => {
