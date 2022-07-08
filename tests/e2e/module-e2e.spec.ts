@@ -70,16 +70,16 @@ describe('EventEmitterModule - e2e', () => {
   it('should be able to emit a request-scoped event with a single payload', async () => {
     await app.init();
 
-    expect(EventsProviderRequestScopedConsumer.injectedEventPayload).toEqual(
-      TEST_EVENT_PAYLOAD,
-    );
+    expect(
+      EventsProviderRequestScopedConsumer.injectedEventPayload.objectValue,
+    ).toEqual(TEST_EVENT_PAYLOAD);
   });
 
   it('should be able to emit a request-scoped event with a string payload', async () => {
     await app.init();
 
     expect(
-      EventsProviderRequestScopedConsumer.injectedEventStringPayload,
+      EventsProviderRequestScopedConsumer.injectedEventPayload.stringValue,
     ).toEqual(TEST_EVENT_STRING_PAYLOAD);
   });
 
@@ -87,7 +87,7 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     expect(
-      EventsProviderRequestScopedConsumer.injectedEventMultiPayload,
+      EventsProviderRequestScopedConsumer.injectedEventPayload.arrayValue,
     ).toEqual(TEST_EVENT_MULTIPLE_PAYLOAD);
   });
 
