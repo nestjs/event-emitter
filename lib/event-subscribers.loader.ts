@@ -23,7 +23,7 @@ import { OnEventOptions } from './interfaces';
 export class EventSubscribersLoader
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
-  private injector = new Injector();
+  private readonly injector = new Injector();
 
   constructor(
     private readonly discoveryService: DiscoveryService,
@@ -64,7 +64,7 @@ export class EventSubscribersLoader
       });
   }
 
-  private async subscribeToEventIfListener(
+  private subscribeToEventIfListener(
     instance: Record<string, any>,
     methodKey: string,
     isRequestScoped: boolean,
@@ -104,7 +104,7 @@ export class EventSubscribersLoader
       : this.eventEmitter.on.bind(this.eventEmitter);
   }
 
-  private async registerRequestScopedListener(eventListenerContext: {
+  private registerRequestScopedListener(eventListenerContext: {
     listenerMethod: EventEmitter2['on'];
     event: string | symbol | (string | symbol)[];
     eventListenerInstance: Record<string, any>;
@@ -157,8 +157,8 @@ export class EventSubscribersLoader
 
       `this.eventEmitter.emit('event', 'payload');
       
-      if we registered the original `eventPayload`, when we try to inject it in a listener, it'll be retrieved as [`event`].
-      However, whoever is using this library would certainly expect the event payload to be a single object, not an array,
+      if we registered the original `eventPayload`, when we try to inject it in a listener, it'll be retrieved as [`payload`].
+      However, whoever is using this library would certainly expect the event payload to be a single string 'payload', not an array,
       since this is what we emitted above.
     */
 
