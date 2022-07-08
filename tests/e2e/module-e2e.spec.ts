@@ -70,6 +70,14 @@ describe('EventEmitterModule - e2e', () => {
     });
   });
 
+  it('should be able to emit a request-scoped event with a string payload', async () => {
+    await app.init();
+
+    expect(
+      EventsProviderRequestScopedConsumer.injectedEventStringPayload,
+    ).toEqual('some-string');
+  });
+
   it('should be able to emit a request-scoped event with multiple payloads', async () => {
     await app.init();
 

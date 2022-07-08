@@ -12,5 +12,6 @@ export class EventsProducer implements OnApplicationBootstrap {
       { test: 'event' },
       { test2: 'event2' },
     );
+    this.eventEmitter.emit('string.event', 'some-string');
   }
 }

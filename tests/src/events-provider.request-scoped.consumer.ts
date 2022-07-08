@@ -8,6 +8,9 @@ export class EventsProviderRequestScopedConsumer {
     if (Array.isArray(this.eventRef)) {
       EventsProviderRequestScopedConsumer.injectedEventMultiPayload =
         this.eventRef;
+    } else if (typeof this.eventRef === 'string') {
+      EventsProviderRequestScopedConsumer.injectedEventStringPayload =
+        this.eventRef;
     } else {
       EventsProviderRequestScopedConsumer.injectedEventPayload = this.eventRef;
     }
@@ -15,10 +18,14 @@ export class EventsProviderRequestScopedConsumer {
 
   public static injectedEventPayload = {};
   public static injectedEventMultiPayload: any[] = [];
+  public static injectedEventStringPayload = '';
 
   @OnEvent('test.*')
   onTestEvent() {}
 
   @OnEvent('multiple.*')
   onMultiplePayloadEvent() {}
+
+  @OnEvent('string.*')
+  onStringPayloadEvent() {}
 }
