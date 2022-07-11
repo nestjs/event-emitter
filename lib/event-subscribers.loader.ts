@@ -78,7 +78,7 @@ export class EventSubscribersLoader
     }
 
     const { event, options } = eventListenerMetadata;
-    const listenerMethod = this.registerListenerMethodBasedOn(options);
+    const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
 
     if (isRequestScoped) {
       this.registerRequestScopedListener({
@@ -98,7 +98,7 @@ export class EventSubscribersLoader
     }
   }
 
-  private registerListenerMethodBasedOn(options?: OnEventOptions) {
+  private getRegisterListenerMethodBasedOn(options?: OnEventOptions) {
     return Boolean(options?.prependListener)
       ? this.eventEmitter.prependListener.bind(this.eventEmitter)
       : this.eventEmitter.on.bind(this.eventEmitter);
