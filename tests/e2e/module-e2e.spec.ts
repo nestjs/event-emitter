@@ -8,6 +8,7 @@ import {
   TEST_EVENT_STRING_PAYLOAD,
 } from '../src/constants';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
+import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
 import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer';
@@ -29,7 +30,15 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
-    expect(eventsConsumerRef.eventReceiveCount).toEqual(1);
+  });
+
+  it(`aliased providers should receive an event only once`, async () => {
+    const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);    
+    const eventSpy = jest.spyOn(eventsConsumerRef, 'eventPayload', 'set');
+    await app.init();
+
+    expect(eventSpy).toBeCalledTimes(1);
+    eventSpy.mockRestore();
   });
 
   it(`should emit a "test-event" event to controllers`, async () => {
