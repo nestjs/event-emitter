@@ -20,6 +20,10 @@ import { TestProvider } from './test-provider';
     EventsProducer,
     TestProvider,
     EventsProviderRequestScopedConsumer,
+    {
+      provide: 'AnAliasedConsumer',
+      useExisting: EventsProviderConsumer,
+    },
   ],
 })
 export class AppModule {}

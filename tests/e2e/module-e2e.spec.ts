@@ -29,6 +29,7 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
+    expect(eventsConsumerRef.eventReceiveCount).toEqual(1);
   });
 
   it(`should emit a "test-event" event to controllers`, async () => {
