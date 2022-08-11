@@ -48,7 +48,6 @@ export class EventSubscribersLoader
       .filter(wrapper => wrapper.instance)
       .forEach((wrapper: InstanceWrapper) => {
         if (wrapper.isAlias) {
-          //Let the original provider handle events and not any of its aliases
           return;
         }
         const { instance } = wrapper;
