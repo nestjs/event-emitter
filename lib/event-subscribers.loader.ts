@@ -45,11 +45,8 @@ export class EventSubscribersLoader
     const providers = this.discoveryService.getProviders();
     const controllers = this.discoveryService.getControllers();
     [...providers, ...controllers]
-      .filter(wrapper => wrapper.instance)
+      .filter(wrapper => wrapper.instance && !wrapper.isAlias)
       .forEach((wrapper: InstanceWrapper) => {
-        if (wrapper.isAlias) {
-          return;
-        }
         const { instance } = wrapper;
         const prototype = Object.getPrototypeOf(instance) || {};
         const isRequestScoped = !wrapper.isDependencyTreeStatic();
