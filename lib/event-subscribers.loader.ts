@@ -70,31 +70,32 @@ export class EventSubscribersLoader
     isRequestScoped: boolean,
     moduleRef: Module,
   ) {
-    const eventListenerMetadata = this.metadataAccessor.getEventHandlerMetadata(
-      instance[methodKey],
-    );
-    if (!eventListenerMetadata) {
+    const eventListenerMetadatas =
+      this.metadataAccessor.getEventHandlerMetadata(instance[methodKey]);
+    if (!eventListenerMetadatas) {
       return;
     }
 
-    const { event, options } = eventListenerMetadata;
-    const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
+    for (const eventListenerMetadata of eventListenerMetadatas) {
+      const { event, options } = eventListenerMetadata;
+      const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
 
-    if (isRequestScoped) {
-      this.registerRequestScopedListener({
-        event,
-        eventListenerInstance: instance,
-        listenerMethod,
-        listenerMethodKey: methodKey,
-        moduleRef,
-        options,
-      });
-    } else {
-      listenerMethod(
-        event,
-        (...args: unknown[]) => instance[methodKey].call(instance, ...args),
-        options,
-      );
+      if (isRequestScoped) {
+        this.registerRequestScopedListener({
+          event,
+          eventListenerInstance: instance,
+          listenerMethod,
+          listenerMethodKey: methodKey,
+          moduleRef,
+          options,
+        });
+      } else {
+        listenerMethod(
+          event,
+          (...args: unknown[]) => instance[methodKey].call(instance, ...args),
+          options,
+        );
+      }
     }
   }
 
@@ -151,12 +152,12 @@ export class EventSubscribersLoader
       **Required explanation for the ternary below**
 
       We need the conditional below because an event can be emitted with a variable amount of arguments.
-      For instance, we can do `this.eventEmitter.emit('event', 'payload1', 'payload2', ..., 'payloadN');` 
-      
+      For instance, we can do `this.eventEmitter.emit('event', 'payload1', 'payload2', ..., 'payloadN');`
+
       All payload arguments are internally stored as an array. So, imagine we emitted an event as follows:
 
       `this.eventEmitter.emit('event', 'payload');
-      
+
       if we registered the original `eventPayload`, when we try to inject it in a listener, it'll be retrieved as [`payload`].
       However, whoever is using this library would certainly expect the event payload to be a single string 'payload', not an array,
       since this is what we emitted above.

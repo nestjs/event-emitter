@@ -32,8 +32,15 @@ describe('EventEmitterModule - e2e', () => {
     expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
   });
 
+  it(`should emit a "stacked-event" event to providers`, async () => {
+    const eventsConsumerRef = app.get(EventsProviderConsumer);
+    await app.init();
+
+    expect(eventsConsumerRef.stackedEventCalls).toEqual(2);
+  });
+
   it(`aliased providers should receive an event only once`, async () => {
-    const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);    
+    const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);
     const eventSpy = jest.spyOn(eventsConsumerRef, 'eventPayload', 'set');
     await app.init();
 
