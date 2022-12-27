@@ -21,7 +21,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "eventemitter2": "6.4.6"
+    "eventemitter2": "6.4.9"
   },
   "devDependencies": {
     "@commitlint/cli": "17.2.0",
