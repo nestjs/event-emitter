@@ -7,7 +7,9 @@ import { OnEventMetadata } from './decorators';
 export class EventsMetadataAccessor {
   constructor(private readonly reflector: Reflector) {}
 
-  getEventHandlerMetadata(target: Type<unknown>): OnEventMetadata | undefined {
+  getEventHandlerMetadata(
+    target: Type<unknown>,
+  ): OnEventMetadata[] | undefined {
     return this.reflector.get(EVENT_LISTENER_METADATA, target);
   }
 }
