@@ -50,16 +50,17 @@ export class EventSubscribersLoader
         const { instance } = wrapper;
         const prototype = Object.getPrototypeOf(instance) || {};
         const isRequestScoped = !wrapper.isDependencyTreeStatic();
-        this.metadataScanner
-          .getAllMethodNames(prototype)
-          .forEach(methodKey =>
+        this.metadataScanner.scanFromPrototype(
+          instance,
+          prototype,
+          (methodKey: string) =>
             this.subscribeToEventIfListener(
               instance,
               methodKey,
               isRequestScoped,
               wrapper.host as Module,
             ),
-          );
+        );
       });
   }
 
