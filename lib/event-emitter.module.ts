@@ -5,6 +5,9 @@ import { EventSubscribersLoader } from './event-subscribers.loader';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
 import { EventEmitterModuleOptions } from './interfaces';
 
+/**
+ * @publicApi
+ */
 @Module({})
 export class EventEmitterModule {
   static forRoot(options?: EventEmitterModuleOptions): DynamicModule {

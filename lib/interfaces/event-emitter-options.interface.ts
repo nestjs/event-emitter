@@ -1,5 +1,8 @@
 import { ConstructorOptions } from 'eventemitter2';
 
+/**
+ * @publicApi
+ */
 export interface EventEmitterModuleOptions extends ConstructorOptions {
   /**
    * If "true", registers `EventEmitterModule` as a global module.

@@ -3,6 +3,8 @@ import { EVENT_LISTENER_METADATA } from '../constants';
 import { OnEventOptions } from '../interfaces';
 
 /**
+ * @publicApi
+ * 
  * `@OnEvent` decorator metadata
  */
 export interface OnEventMetadata {
@@ -22,6 +24,8 @@ export interface OnEventMetadata {
 export type OnEventType = string | symbol | Array<string | symbol>;
 
 /**
+ * @publicApi
+ * 
  * Event listener decorator.
  * Subscribes to events based on the specified name(s).
  *
