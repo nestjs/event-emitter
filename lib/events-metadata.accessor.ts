@@ -11,7 +11,9 @@ export class EventsMetadataAccessor {
     target: Type<unknown>,
   ): OnEventMetadata[] | undefined {
     const metadata = this.reflector.get(EVENT_LISTENER_METADATA, target);
-    if (!metadata) return undefined;
+    if (!metadata) {
+      return undefined;
+    }
     return Array.isArray(metadata) ? metadata : [metadata];
   }
 }
