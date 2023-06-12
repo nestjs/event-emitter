@@ -10,6 +10,10 @@ export class EventsMetadataAccessor {
   getEventHandlerMetadata(
     target: Type<unknown>,
   ): OnEventMetadata[] | undefined {
-    return this.reflector.get(EVENT_LISTENER_METADATA, target);
+    const metadata = this.reflector.get(EVENT_LISTENER_METADATA, target);
+    if (!metadata) {
+      return undefined;
+    }
+    return Array.isArray(metadata) ? metadata : [metadata];
   }
 }
