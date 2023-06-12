@@ -7,6 +7,8 @@ import {
   TEST_EVENT_PAYLOAD,
   TEST_EVENT_STRING_PAYLOAD,
 } from '../src/constants';
+import { CUSTOM_DECORATOR_EVENT } from '../src/custom-decorator-test.constants';
+import { CustomEventDecoratorConsumer } from '../src/custom-decorator-test.consumer';
 import { EventsControllerConsumer } from '../src/events-controller.consumer';
 import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
@@ -106,6 +108,18 @@ describe('EventEmitterModule - e2e', () => {
     expect(
       EventsProviderRequestScopedConsumer.injectedEventPayload.arrayValue,
     ).toEqual(TEST_EVENT_MULTIPLE_PAYLOAD);
+  });
+
+  it('should work with non array metadata', async () => {
+    await app.init();
+
+    const emitter = app.get(EventEmitter2);
+    const customConsumer = app.get(CustomEventDecoratorConsumer);
+
+    // callback called synchronysly
+    emitter.emit(CUSTOM_DECORATOR_EVENT);
+
+    expect(customConsumer.isEmitted).toBeTruthy();
   });
 
   afterEach(async () => {
