@@ -122,6 +122,17 @@ describe('EventEmitterModule - e2e', () => {
     expect(customConsumer.isEmitted).toBeTruthy();
   });
 
+  it('should be able to handled when an unexpected error occurs', async () => {
+    const eventsConsumerRef = app.get(EventsProviderConsumer);
+    await app.init();
+
+    const emitter = app.get(EventEmitter2);
+    const result = emitter.emit('error-handling.event');
+
+    expect(eventsConsumerRef.errorHandlingCalls).toEqual(1);
+    expect(result).toBeTruthy();
+  });
+
   afterEach(async () => {
     await app.close();
   });
