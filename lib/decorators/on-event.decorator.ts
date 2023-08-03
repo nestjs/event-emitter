@@ -23,6 +23,22 @@ export interface OnEventMetadata {
 export type OnEventType = string | symbol | Array<string | symbol>;
 
 /**
+ * Wraps the method in try/catch blocks.
+ * @param descriptor
+ */
+const wrapDescriptorInTryCatchBlocks = (descriptor: any) => {
+  const originMethod = descriptor.value;
+  descriptor.value = async function (...args: any[]) {
+    try {
+      await originMethod.call(this, ...args);
+    } catch (error) {
+      Logger.error(error, 'OnEvent');
+    }
+  };
+  Object.setPrototypeOf(descriptor.value, originMethod);
+};
+
+/**
  * Event listener decorator.
  * Subscribes to events based on the specified name(s).
  *
@@ -33,25 +49,7 @@ export const OnEvent = (
   options?: OnEventOptions,
 ): MethodDecorator => {
   const decoratorFactory = (target: object, key?: any, descriptor?: any) => {
-    const logger = new Logger('OnEvent');
-    const originMethod = descriptor.value;
-    const metaKeys = Reflect.getOwnMetadataKeys(descriptor.value);
-    const metas = metaKeys.map(key => [
-      key,
-      Reflect.getMetadata(key, descriptor.value),
-    ]);
-    descriptor.value = async function (...args: any[]) {
-      try {
-        await originMethod.call(this, ...args);
-      } catch (error) {
-        if (error instanceof Error) {
-          logger.error(error, error.stack);
-        } else {
-          logger.error(error);
-        }
-      }
-    };
-    metas.forEach(([k, v]) => Reflect.defineMetadata(k, v, descriptor.value));
+    wrapDescriptorInTryCatchBlocks(descriptor);
 
     extendArrayMetadata(
       EVENT_LISTENER_METADATA,
