@@ -122,7 +122,7 @@ describe('EventEmitterModule - e2e', () => {
     expect(customConsumer.isEmitted).toBeTruthy();
   });
 
-  it('should be able to handled when an unexpected error occurs', async () => {
+  it('should be able to gracefully recover when an unexpected error occurs', async () => {
     const eventsConsumerRef = app.get(EventsProviderConsumer);
     await app.init();
 
