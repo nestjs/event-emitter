@@ -18,7 +18,7 @@ export class EventsProviderConsumer {
     this.stackedEventCalls++;
   }
 
-  @OnEvent('error-handling.*')
+  @OnEvent('error-handling.provider')
   onErrorHandlingEvent() {
     this.errorHandlingCalls++;
     throw new Error('This is a test error');

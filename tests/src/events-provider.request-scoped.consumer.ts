@@ -21,4 +21,9 @@ export class EventsProviderRequestScopedConsumer {
 
   @OnEvent('string.*')
   onStringPayloadEvent() {}
+
+  @OnEvent('error-handling.request-scoped')
+  onErrorHandlingEvent() {
+    throw new Error('This is a test error');
+  }
 }
