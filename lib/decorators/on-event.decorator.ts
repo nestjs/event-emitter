@@ -1,7 +1,6 @@
 import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util';
 import { EVENT_LISTENER_METADATA } from '../constants';
 import { OnEventOptions } from '../interfaces';
-import { Logger } from '@nestjs/common';
 
 /**
  * `@OnEvent` decorator metadata
@@ -23,22 +22,6 @@ export interface OnEventMetadata {
 export type OnEventType = string | symbol | Array<string | symbol>;
 
 /**
- * Wraps the method in try/catch blocks.
- * @param descriptor
- */
-const wrapDescriptorInTryCatchBlocks = (descriptor: any) => {
-  const originMethod = descriptor.value;
-  descriptor.value = async function (...args: any[]) {
-    try {
-      await originMethod.call(this, ...args);
-    } catch (error) {
-      Logger.error(error, 'OnEvent');
-    }
-  };
-  Object.setPrototypeOf(descriptor.value, originMethod);
-};
-
-/**
  * Event listener decorator.
  * Subscribes to events based on the specified name(s).
  *
@@ -49,8 +32,6 @@ export const OnEvent = (
   options?: OnEventOptions,
 ): MethodDecorator => {
   const decoratorFactory = (target: object, key?: any, descriptor?: any) => {
-    wrapDescriptorInTryCatchBlocks(descriptor);
-
     extendArrayMetadata(
       EVENT_LISTENER_METADATA,
       [{ event, options } as OnEventMetadata],

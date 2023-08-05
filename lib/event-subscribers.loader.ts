@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ export class EventSubscribersLoader
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
   private readonly injector = new Injector();
+  private readonly logger = new Logger('Event');
 
   constructor(
     private readonly discoveryService: DiscoveryService,
@@ -92,7 +94,8 @@ export class EventSubscribersLoader
       } else {
         listenerMethod(
           event,
-          (...args: unknown[]) => instance[methodKey].call(instance, ...args),
+          (...args: unknown[]) =>
+            this.wrapFunctionInTryCatchBlocks(instance, methodKey, args),
           options,
         );
       }
@@ -135,9 +138,10 @@ export class EventSubscribersLoader
           moduleRef.providers,
           contextId,
         );
-        return contextInstance[listenerMethodKey].call(
+        return this.wrapFunctionInTryCatchBlocks(
           contextInstance,
-          ...args,
+          listenerMethodKey,
+          args,
         );
       },
       options,
@@ -167,5 +171,17 @@ export class EventSubscribersLoader
       eventPayload.length > 1 ? eventPayload : eventPayload[0];
 
     this.moduleRef.registerRequestByContextId(payloadObjectOrArray, contextId);
+  }
+
+  private async wrapFunctionInTryCatchBlocks(
+    instance: Record<string, any>,
+    methodKey: string,
+    args: unknown[],
+  ) {
+    try {
+      return await instance[methodKey].call(instance, ...args);
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 }
