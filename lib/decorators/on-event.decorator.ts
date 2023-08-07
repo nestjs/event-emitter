@@ -33,9 +33,9 @@ export const OnEvent = (
 ): MethodDecorator => {
   const decoratorFactory = (target: object, key?: any, descriptor?: any) => {
     extendArrayMetadata(
-        EVENT_LISTENER_METADATA,
-        [{ event, options } as OnEventMetadata],
-        descriptor.value,
+      EVENT_LISTENER_METADATA,
+      [{ event, options } as OnEventMetadata],
+      descriptor.value,
     );
     return descriptor;
   };

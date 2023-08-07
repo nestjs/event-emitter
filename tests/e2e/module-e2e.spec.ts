@@ -122,6 +122,26 @@ describe('EventEmitterModule - e2e', () => {
     expect(customConsumer.isEmitted).toBeTruthy();
   });
 
+  it('should be able to gracefully recover when an unexpected error occurs from provider', async () => {
+    const eventsConsumerRef = app.get(EventsProviderConsumer);
+    await app.init();
+
+    const emitter = app.get(EventEmitter2);
+    const result = emitter.emit('error-handling.provider');
+
+    expect(eventsConsumerRef.errorHandlingCalls).toEqual(1);
+    expect(result).toBeTruthy();
+  });
+
+  it('should be able to gracefully recover when an unexpected error occurs from request scoped', async () => {
+    await app.init();
+
+    const eventEmitter = app.get(EventEmitter2);
+    const result = eventEmitter.emit('error-handling.request-scoped');
+
+    expect(result).toBeTruthy();
+  });
+
   afterEach(async () => {
     await app.close();
   });
