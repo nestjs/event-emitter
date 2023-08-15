@@ -26,4 +26,14 @@ export class EventsProviderRequestScopedConsumer {
   onErrorHandlingEvent() {
     throw new Error('This is a test error');
   }
+
+  @OnEvent('error-handling-suppressed.request-scoped', { suppressErrors: true })
+  onErrorHandlingSuppressedEvent() {
+    throw new Error('This is a test error');
+  }
+
+  @OnEvent('error-throwing.request-scoped', { suppressErrors: false })
+  onErrorThrowingEvent() {
+    throw new Error('This is a test error');
+  }
 }

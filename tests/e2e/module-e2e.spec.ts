@@ -133,6 +133,17 @@ describe('EventEmitterModule - e2e', () => {
     expect(result).toBeTruthy();
   });
 
+  it('should be able to gracefully recover when an unexpected error occurs from provider and suppressErrors is true', async () => {
+    const eventsConsumerRef = app.get(EventsProviderConsumer);
+    await app.init();
+
+    const emitter = app.get(EventEmitter2);
+    const result = emitter.emit('error-handling-suppressed.provider');
+
+    expect(eventsConsumerRef.errorHandlingCalls).toEqual(1);
+    expect(result).toBeTruthy();
+  });
+
   it('should be able to gracefully recover when an unexpected error occurs from request scoped', async () => {
     await app.init();
 
@@ -140,6 +151,29 @@ describe('EventEmitterModule - e2e', () => {
     const result = eventEmitter.emit('error-handling.request-scoped');
 
     expect(result).toBeTruthy();
+  });
+
+  it('should be able to gracefully recover when an unexpected error occurs from request scoped and suppressErrors is true', async () => {
+    await app.init();
+
+    const eventEmitter = app.get(EventEmitter2);
+    const result = eventEmitter.emit('error-handling-suppressed.request-scoped');
+
+    expect(result).toBeTruthy();
+  });
+
+  it('should throw when an unexpected error occurs from provider and suppressErrors is false', async () => {
+    await app.init();
+
+    const eventEmitter = app.get(EventEmitter2);
+    expect(eventEmitter.emitAsync('error-throwing.provider')).rejects.toThrow("This is a test error");
+  });
+
+  it('should throw when an unexpected error occurs from request scoped and suppressErrors is false', async () => {
+    await app.init();
+
+    const eventEmitter = app.get(EventEmitter2);
+    expect(eventEmitter.emitAsync('error-throwing.request-scoped')).rejects.toThrow("This is a test error");
   });
 
   afterEach(async () => {

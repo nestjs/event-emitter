@@ -9,4 +9,11 @@ export type OnEventOptions = OnOptions & {
    * @default false
    */
   prependListener?: boolean;
+
+  /**
+   * If "true", the onEvent callback will not throw an error while handling the event. Otherwise, if "false" it will throw an error.
+   * 
+   * @default true
+   */
+  suppressErrors?: boolean;
 };
