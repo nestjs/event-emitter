@@ -95,7 +95,7 @@ export class EventSubscribersLoader
         listenerMethod(
           event,
           (...args: unknown[]) =>
-            this.wrapFunctionInTryCatchBlocks(instance, methodKey, args),
+            this.wrapFunctionInTryCatchBlocks(instance, methodKey, args, options),
           options,
         );
       }
@@ -142,6 +142,7 @@ export class EventSubscribersLoader
           contextInstance,
           listenerMethodKey,
           args,
+          options,
         );
       },
       options,
@@ -177,11 +178,16 @@ export class EventSubscribersLoader
     instance: Record<string, any>,
     methodKey: string,
     args: unknown[],
+    options?: OnEventOptions,
   ) {
     try {
       return await instance[methodKey].call(instance, ...args);
     } catch (e) {
-      this.logger.error(e);
+      if (options?.suppressErrors ?? true) {
+        this.logger.error(e);
+      } else {
+        throw e;
+      }
     }
   }
 }

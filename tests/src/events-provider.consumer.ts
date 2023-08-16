@@ -23,4 +23,15 @@ export class EventsProviderConsumer {
     this.errorHandlingCalls++;
     throw new Error('This is a test error');
   }
+
+  @OnEvent('error-handling-suppressed.provider', { suppressErrors: true })
+  onErrorHandlingSuppressedEvent() {
+    this.errorHandlingCalls++;
+    throw new Error('This is a test error');
+  }
+
+  @OnEvent('error-throwing.provider', { suppressErrors: false })
+  onErrorThrowingEvent() {
+    throw new Error('This is a test error');
+  }
 }
