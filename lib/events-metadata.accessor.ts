@@ -13,7 +13,7 @@ export class EventsMetadataAccessor {
     // Circumvent a crash that comes from reflect-metadata if it is
     // given a non-object non-function target to reflect upon.
     if (
-      target === undefined ||
+      !target ||
       (typeof target !== 'function' && typeof target !== 'object')
     ) {
       return undefined;
