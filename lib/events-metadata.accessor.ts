@@ -10,6 +10,15 @@ export class EventsMetadataAccessor {
   getEventHandlerMetadata(
     target: Type<unknown>,
   ): OnEventMetadata[] | undefined {
+    // Circumvent a crash that comes from reflect-metadata if it is
+    // given a non-object non-function target to reflect upon.
+    if (
+      target === undefined ||
+      (typeof target !== 'function' && typeof target !== 'object')
+    ) {
+      return undefined;
+    }
+
     const metadata = this.reflector.get(EVENT_LISTENER_METADATA, target);
     if (!metadata) {
       return undefined;
