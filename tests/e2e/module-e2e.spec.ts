@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { ContextIdFactory, createContextId } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
 import { EventEmitterReadinessWatcher } from '../../lib';
@@ -14,11 +15,21 @@ import { EventsControllerConsumer } from '../src/events-controller.consumer';
 import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
 import { EventsProviderConsumer } from '../src/events-provider.consumer';
+import { EventsProviderDurableRequestScopedConsumer } from '../src/events-provider.durable-request-scoped.consumer';
 import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer';
 import { TEST_PROVIDER_TOKEN } from '../src/test-provider';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;
+  const durableContextId = createContextId();
+
+  beforeAll(() => {
+    ContextIdFactory.apply({
+      attach: (contextId, _request) => info => {
+        return info.isTreeDurable ? durableContextId : contextId;
+      },
+    });
+  });
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -95,6 +106,15 @@ describe('EventEmitterModule - e2e', () => {
     ).toEqual(TEST_EVENT_PAYLOAD);
   });
 
+  it('should be able to emit a durable request-scoped event with a single payload', async () => {
+    await app.init();
+
+    expect(
+      EventsProviderDurableRequestScopedConsumer.injectedEventPayload
+        .objectValue,
+    ).toEqual(TEST_EVENT_PAYLOAD);
+  });
+
   it('should be able to emit a request-scoped event with a string payload', async () => {
     await app.init();
 
@@ -103,11 +123,29 @@ describe('EventEmitterModule - e2e', () => {
     ).toEqual(TEST_EVENT_STRING_PAYLOAD);
   });
 
+  it('should be able to emit a durable request-scoped event with a string payload', async () => {
+    await app.init();
+
+    expect(
+      EventsProviderDurableRequestScopedConsumer.injectedEventPayload
+        .stringValue,
+    ).toEqual(TEST_EVENT_STRING_PAYLOAD);
+  });
+
   it('should be able to emit a request-scoped event with multiple payloads', async () => {
     await app.init();
 
     expect(
       EventsProviderRequestScopedConsumer.injectedEventPayload.arrayValue,
+    ).toEqual(TEST_EVENT_MULTIPLE_PAYLOAD);
+  });
+
+  it('should be able to emit a durable request-scoped event with multiple payloads', async () => {
+    await app.init();
+
+    expect(
+      EventsProviderDurableRequestScopedConsumer.injectedEventPayload
+        .arrayValue,
     ).toEqual(TEST_EVENT_MULTIPLE_PAYLOAD);
   });
 
@@ -190,6 +228,39 @@ describe('EventEmitterModule - e2e', () => {
     const eventEmitterWatcher = app.get(EventEmitterReadinessWatcher);
     await expect(eventEmitterWatcher.waitUntilReady()).resolves.toBeUndefined();
     expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
+  });
+
+  it('should throw when an unexpected error occurs from durable request scoped and suppressErrors is false', async () => {
+    await app.init();
+
+    const eventEmitter = app.get(EventEmitter2);
+    expect(
+      eventEmitter.emitAsync('error-throwing.durable-request-scoped'),
+    ).rejects.toThrow('This is a test error');
+  });
+
+  it('should load durable provider once for different event emissions', async () => {
+    await app.init();
+    const eventEmitter = app.get(EventEmitter2);
+    const [durableInstance] = await eventEmitter.emitAsync('durable');
+    const [durableInstance2] = await eventEmitter.emitAsync('durable');
+    expect(durableInstance).toBe(durableInstance2);
+  });
+
+  it('should load durable provider once for different event emissions', async () => {
+    await app.init();
+    const eventEmitter = app.get(EventEmitter2);
+    const [durableInstance] = await eventEmitter.emitAsync('durable');
+    const [durableInstance2] = await eventEmitter.emitAsync('durable');
+    expect(durableInstance).toBe(durableInstance2);
+  });
+
+  it('should load non-durable provider anew for different event emissions', async () => {
+    await app.init();
+    const eventEmitter = app.get(EventEmitter2);
+    const [notDurableInstance] = await eventEmitter.emitAsync('not-durable');
+    const [notDurableInstance2] = await eventEmitter.emitAsync('not-durable');
+    expect(notDurableInstance).not.toBe(notDurableInstance2);
   });
 
   afterEach(async () => {
