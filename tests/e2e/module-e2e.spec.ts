@@ -247,14 +247,6 @@ describe('EventEmitterModule - e2e', () => {
     expect(durableInstance).toBe(durableInstance2);
   });
 
-  it('should load durable provider once for different event emissions', async () => {
-    await app.init();
-    const eventEmitter = app.get(EventEmitter2);
-    const [durableInstance] = await eventEmitter.emitAsync('durable');
-    const [durableInstance2] = await eventEmitter.emitAsync('durable');
-    expect(durableInstance).toBe(durableInstance2);
-  });
-
   it('should load non-durable provider anew for different event emissions', async () => {
     await app.init();
     const eventEmitter = app.get(EventEmitter2);
