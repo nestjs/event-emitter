@@ -36,4 +36,9 @@ export class EventsProviderRequestScopedConsumer {
   onErrorThrowingEvent() {
     throw new Error('This is a test error');
   }
+
+  @OnEvent('not-durable')
+  onDurableTest() {
+    return this;
+  }
 }

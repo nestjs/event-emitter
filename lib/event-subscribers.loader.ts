@@ -11,10 +11,7 @@ import {
   ModuleRef,
 } from '@nestjs/core';
 import { Injector } from '@nestjs/core/injector/injector';
-import {
-  ContextId,
-  InstanceWrapper,
-} from '@nestjs/core/injector/instance-wrapper';
+import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
 import { EventEmitter2 } from 'eventemitter2';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
@@ -95,7 +92,12 @@ export class EventSubscribersLoader
         listenerMethod(
           event,
           (...args: unknown[]) =>
-            this.wrapFunctionInTryCatchBlocks(instance, methodKey, args, options),
+            this.wrapFunctionInTryCatchBlocks(
+              instance,
+              methodKey,
+              args,
+              options,
+            ),
           options,
         );
       }
@@ -128,9 +130,10 @@ export class EventSubscribersLoader
     listenerMethod(
       event,
       async (...args: unknown[]) => {
-        const contextId = ContextIdFactory.create();
+        const request = this.getRequestFromEventPayload(args);
+        const contextId = ContextIdFactory.getByRequest({ payload: request });
 
-        this.registerEventPayloadByContextId(args, contextId);
+        this.moduleRef.registerRequestByContextId(request, contextId);
 
         const contextInstance = await this.injector.loadPerContext(
           eventListenerInstance,
@@ -149,10 +152,7 @@ export class EventSubscribersLoader
     );
   }
 
-  private registerEventPayloadByContextId(
-    eventPayload: unknown[],
-    contextId: ContextId,
-  ) {
+  private getRequestFromEventPayload(eventPayload: unknown[]): unknown {
     /*
       **Required explanation for the ternary below**
 
@@ -167,11 +167,7 @@ export class EventSubscribersLoader
       However, whoever is using this library would certainly expect the event payload to be a single string 'payload', not an array,
       since this is what we emitted above.
     */
-
-    const payloadObjectOrArray =
-      eventPayload.length > 1 ? eventPayload : eventPayload[0];
-
-    this.moduleRef.registerRequestByContextId(payloadObjectOrArray, contextId);
+    return eventPayload.length > 1 ? eventPayload : eventPayload[0];
   }
 
   private async wrapFunctionInTryCatchBlocks(
