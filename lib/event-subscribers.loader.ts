@@ -184,7 +184,7 @@ export class EventSubscribersLoader
       return await instance[methodKey].call(instance, ...args);
     } catch (e) {
       if (options?.suppressErrors ?? true) {
-        this.logger.error(e);
+        this.logger.error(e.message, e.stack);
       } else {
         throw e;
       }
