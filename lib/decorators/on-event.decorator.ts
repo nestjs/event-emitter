@@ -31,11 +31,15 @@ export const OnEvent = (
   event: OnEventType,
   options?: OnEventOptions,
 ): MethodDecorator => {
-  const decoratorFactory = (target: object, key?: any, descriptor?: any) => {
+  const decoratorFactory = (
+    target: object,
+    key?: any,
+    descriptor?: TypedPropertyDescriptor<any>,
+  ) => {
     extendArrayMetadata(
       EVENT_LISTENER_METADATA,
       [{ event, options } as OnEventMetadata],
-      descriptor.value,
+      descriptor!.value as (...args: any[]) => any,
     );
     return descriptor;
   };
