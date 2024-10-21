@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
+import { EventEmitterReadinessWatcher } from '../../lib';
 import { AppModule } from '../src/app.module';
 import {
   TEST_EVENT_MULTIPLE_PAYLOAD,
@@ -157,7 +158,9 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    const result = eventEmitter.emit('error-handling-suppressed.request-scoped');
+    const result = eventEmitter.emit(
+      'error-handling-suppressed.request-scoped',
+    );
 
     expect(result).toBeTruthy();
   });
@@ -166,14 +169,27 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    expect(eventEmitter.emitAsync('error-throwing.provider')).rejects.toThrow("This is a test error");
+    expect(eventEmitter.emitAsync('error-throwing.provider')).rejects.toThrow(
+      'This is a test error',
+    );
   });
 
   it('should throw when an unexpected error occurs from request scoped and suppressErrors is false', async () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    expect(eventEmitter.emitAsync('error-throwing.request-scoped')).rejects.toThrow("This is a test error");
+    expect(
+      eventEmitter.emitAsync('error-throwing.request-scoped'),
+    ).rejects.toThrow('This is a test error');
+  });
+
+  it('should be able to wait until the event emitter is ready', async () => {
+    const eventsConsumerRef = app.get(EventsControllerConsumer);
+    await app.init();
+
+    const eventEmitterWatcher = app.get(EventEmitterReadinessWatcher);
+    await expect(eventEmitterWatcher.waitUntilReady()).resolves.toBeUndefined();
+    expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
   });
 
   afterEach(async () => {

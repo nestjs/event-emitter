@@ -17,6 +17,7 @@ import {
 } from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
 import { EventEmitter2 } from 'eventemitter2';
+import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
 import { OnEventOptions } from './interfaces';
 
@@ -33,10 +34,16 @@ export class EventSubscribersLoader
     private readonly metadataAccessor: EventsMetadataAccessor,
     private readonly metadataScanner: MetadataScanner,
     private readonly moduleRef: ModuleRef,
+    private readonly eventEmitterReadinessWatcher: EventEmitterReadinessWatcher,
   ) {}
 
   onApplicationBootstrap() {
-    this.loadEventListeners();
+    try {
+      this.loadEventListeners();
+      this.eventEmitterReadinessWatcher.setReady();
+    } catch (e) {
+      this.eventEmitterReadinessWatcher.setErrored(e as Error);
+    }
   }
 
   onApplicationShutdown() {
@@ -95,7 +102,12 @@ export class EventSubscribersLoader
         listenerMethod(
           event,
           (...args: unknown[]) =>
-            this.wrapFunctionInTryCatchBlocks(instance, methodKey, args, options),
+            this.wrapFunctionInTryCatchBlocks(
+              instance,
+              methodKey,
+              args,
+              options,
+            ),
           options,
         );
       }
