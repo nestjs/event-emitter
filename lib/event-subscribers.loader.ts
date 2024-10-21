@@ -115,7 +115,7 @@ export class EventSubscribersLoader
   }
 
   private getRegisterListenerMethodBasedOn(options?: OnEventOptions) {
-    return Boolean(options?.prependListener)
+    return options?.prependListener
       ? this.eventEmitter.prependListener.bind(this.eventEmitter)
       : this.eventEmitter.on.bind(this.eventEmitter);
   }
@@ -187,7 +187,7 @@ export class EventSubscribersLoader
   }
 
   private async wrapFunctionInTryCatchBlocks(
-    instance: Record<string, any>,
+    instance: Record<string, (...args: unknown[]) => unknown>,
     methodKey: string,
     args: unknown[],
     options?: OnEventOptions,
@@ -196,7 +196,8 @@ export class EventSubscribersLoader
       return await instance[methodKey].call(instance, ...args);
     } catch (e) {
       if (options?.suppressErrors ?? true) {
-        this.logger.error(e.message, e.stack);
+        const error = e as Error;
+        this.logger.error(error.message, error.stack);
       } else {
         throw e;
       }
