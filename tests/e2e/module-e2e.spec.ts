@@ -62,6 +62,22 @@ describe('EventEmitterModule - e2e', () => {
     eventSpy.mockRestore();
   });
 
+  it(`event subscribers are separate per each app instance`, async () => {
+    const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);
+    const eventSpy = jest.spyOn(eventsConsumerRef, 'eventPayload', 'set');
+
+    await app.init();
+
+    const module2 = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    const app2 = module2.createNestApplication();
+    await app2.init();
+
+    expect(eventSpy).toBeCalledTimes(1);
+    eventSpy.mockRestore();
+  });
+
   it(`should emit a "test-event" event to controllers`, async () => {
     const eventsConsumerRef = app.get(EventsControllerConsumer);
     await app.init();

@@ -19,7 +19,7 @@ export class EventEmitterModule {
         EventEmitterReadinessWatcher,
         {
           provide: EventEmitter2,
-          useValue: new EventEmitter2(options),
+          useFactory: () => new EventEmitter2(options),
         },
       ],
       exports: [EventEmitter2, EventEmitterReadinessWatcher],
