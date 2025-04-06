@@ -1,5 +1,10 @@
 import { OnOptions } from 'eventemitter2';
 
+/**
+ * Options for the `@OnEvent` decorator.
+ * 
+ * @publicApi 
+ */
 export type OnEventOptions = OnOptions & {
   /**
    * If "true", prepends (instead of append) the given listener to the array of listeners.
