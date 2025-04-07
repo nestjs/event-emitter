@@ -4,6 +4,8 @@ import { OnEventOptions } from '../interfaces';
 
 /**
  * `@OnEvent` decorator metadata
+ * 
+ * @publicApi
  */
 export interface OnEventMetadata {
   /**
@@ -26,6 +28,8 @@ export type OnEventType = string | symbol | Array<string | symbol>;
  * Subscribes to events based on the specified name(s).
  *
  * @param event event to subscribe to
+ * 
+ * @publicApi
  */
 export const OnEvent = (
   event: OnEventType,
