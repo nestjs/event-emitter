@@ -28,7 +28,7 @@ export type OnEventType = string | symbol | Array<string | symbol>;
  * Subscribes to events based on the specified name(s).
  *
  * @param event event to subscribe to
- *
+ * @param options listener options
  * @publicApi
  */
 export const OnEvent = (
