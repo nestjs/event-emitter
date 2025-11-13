@@ -2,7 +2,7 @@ import { ConstructorOptions } from 'eventemitter2';
 
 /**
  * Options for the `EventEmitterModule`.
- * 
+ *
  * @publicApi
  */
 export interface EventEmitterModuleOptions extends ConstructorOptions {
