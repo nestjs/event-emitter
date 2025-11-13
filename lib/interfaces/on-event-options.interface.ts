@@ -2,8 +2,8 @@ import { OnOptions } from 'eventemitter2';
 
 /**
  * Options for the `@OnEvent` decorator.
- * 
- * @publicApi 
+ *
+ * @publicApi
  */
 export type OnEventOptions = OnOptions & {
   /**
