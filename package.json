@@ -24,8 +24,8 @@
     "eventemitter2": "6.4.9"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.3.1",
-    "@commitlint/config-angular": "20.3.1",
+    "@commitlint/cli": "20.4.0",
+    "@commitlint/config-angular": "20.4.0",
     "@eslint/js": "9.39.2",
     "@nestjs/common": "11.1.12",
     "@nestjs/core": "11.1.12",
