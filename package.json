@@ -26,7 +26,7 @@
   "devDependencies": {
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-angular": "20.5.0",
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "10.0.1",
     "@nestjs/common": "11.1.18",
     "@nestjs/core": "11.1.18",
     "@nestjs/platform-express": "11.1.18",
@@ -35,7 +35,7 @@
     "@types/node": "24.12.2",
     "@typescript-eslint/eslint-plugin": "8.58.1",
     "@typescript-eslint/parser": "8.58.1",
-    "eslint": "9.39.4",
+    "eslint": "10.2.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-prettier": "5.5.5",
