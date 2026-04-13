@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { INestApplication } from '@nestjs/common';
 import { ContextIdFactory, createContextId } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -55,16 +56,16 @@ describe('EventEmitterModule - e2e', () => {
 
   it(`aliased providers should receive an event only once`, async () => {
     const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);
-    const eventSpy = jest.spyOn(eventsConsumerRef, 'eventPayload', 'set');
+    const eventSpy = vi.spyOn(eventsConsumerRef, 'eventPayload', 'set');
     await app.init();
 
-    expect(eventSpy).toBeCalledTimes(1);
+    expect(eventSpy).toHaveBeenCalledTimes(1);
     eventSpy.mockRestore();
   });
 
   it(`event subscribers are separate per each app instance`, async () => {
     const eventsConsumerRef = app.get(EventsProviderAliasedConsumer);
-    const eventSpy = jest.spyOn(eventsConsumerRef, 'eventPayload', 'set');
+    const eventSpy = vi.spyOn(eventsConsumerRef, 'eventPayload', 'set');
 
     await app.init();
 
@@ -74,7 +75,7 @@ describe('EventEmitterModule - e2e', () => {
     const app2 = module2.createNestApplication();
     await app2.init();
 
-    expect(eventSpy).toBeCalledTimes(1);
+    expect(eventSpy).toHaveBeenCalledTimes(1);
     eventSpy.mockRestore();
   });
 
@@ -87,7 +88,7 @@ describe('EventEmitterModule - e2e', () => {
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
     const eventsConsumerRef = app.get(EventsProviderPrependConsumer);
-    const prependListenerSpy = jest.spyOn(
+    const prependListenerSpy = vi.spyOn(
       app.get(EventEmitter2),
       'prependListener',
     );
@@ -223,16 +224,16 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    expect(eventEmitter.emitAsync('error-throwing.provider')).rejects.toThrow(
-      'This is a test error',
-    );
+    await expect(
+      eventEmitter.emitAsync('error-throwing.provider'),
+    ).rejects.toThrow('This is a test error');
   });
 
   it('should throw when an unexpected error occurs from request scoped and suppressErrors is false', async () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    expect(
+    await expect(
       eventEmitter.emitAsync('error-throwing.request-scoped'),
     ).rejects.toThrow('This is a test error');
   });
@@ -250,7 +251,7 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     const eventEmitter = app.get(EventEmitter2);
-    expect(
+    await expect(
       eventEmitter.emitAsync('error-throwing.durable-request-scoped'),
     ).rejects.toThrow('This is a test error');
   });

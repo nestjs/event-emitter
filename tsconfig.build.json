@@ -13,7 +13,8 @@
     "outDir": "./dist",
     "rootDir": "./lib",
     "skipLibCheck": true,
-    "types": ["vitest/globals", "node"]
+    "types": ["node"]
   },
-  "include": ["lib/**/*", "tests/**/*"]
+  "include": ["lib/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "tests"]
 }

@@ -8,14 +8,14 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf -rf dist && tsc -p tsconfig.json",
+    "build": "rimraf -rf dist && tsc -p tsconfig.build.json",
     "format": "prettier --write \"{lib,test}/**/*.ts\"",
-    "lint": "eslint 'lib/**/*.ts' --fix",
+    "lint": "oxlint --config oxlint.json lib",
     "prepublish:npm": "npm run build",
     "publish:npm": "npm publish --access public",
     "prepublish:next": "npm run build",
     "publish:next": "npm publish --access public --tag next",
-    "test:e2e": "jest --config ./tests/jest-e2e.json --runInBand",
+    "test:e2e": "vitest run",
     "prerelease": "npm run build",
     "release": "release-it",
     "prepare": "husky install"
@@ -26,30 +26,22 @@
   "devDependencies": {
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-angular": "20.5.0",
-    "@eslint/js": "9.39.4",
     "@nestjs/common": "11.1.18",
     "@nestjs/core": "11.1.18",
     "@nestjs/platform-express": "11.1.18",
     "@nestjs/testing": "11.1.18",
-    "@types/jest": "29.5.14",
-    "@types/node": "24.12.2",
-    "@typescript-eslint/eslint-plugin": "8.58.1",
-    "@typescript-eslint/parser": "8.58.1",
-    "eslint": "9.39.4",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-prettier": "5.5.5",
+    "@types/node": "22.15.2",
     "husky": "9.1.7",
-    "jest": "29.7.0",
     "lint-staged": "16.4.0",
+    "oxlint": "1.60.0",
     "prettier": "3.8.2",
     "reflect-metadata": "0.2.2",
     "release-it": "19.2.4",
     "rimraf": "6.1.3",
     "rxjs": "7.8.2",
-    "ts-jest": "29.4.9",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.58.1"
+    "typescript": "6.0.2",
+    "vite": "8.0.8",
+    "vitest": "4.1.4"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",
@@ -58,7 +50,7 @@
   "lint-staged": {
     "*.ts": [
       "prettier --write",
-      "eslint --fix"
+      "oxlint --config oxlint.json"
     ]
   },
   "repository": {
