@@ -1,8 +1,10 @@
 import {
+  Inject,
   Injectable,
   Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
+  Optional,
 } from '@nestjs/common';
 import {
   ContextIdFactory,
@@ -14,9 +16,10 @@ import { Injector } from '@nestjs/core/injector/injector';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
 import { EventEmitter2 } from 'eventemitter2';
+import { EVENT_EMITTER_MODULE_OPTIONS } from './constants';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher';
 import { EventsMetadataAccessor } from './events-metadata.accessor';
-import { OnEventOptions } from './interfaces';
+import { EventEmitterModuleOptions, OnEventOptions } from './interfaces';
 import { EventPayloadHost } from './interfaces/event-payload-host.interface';
 
 @Injectable()
@@ -33,6 +36,9 @@ export class EventSubscribersLoader
     private readonly metadataScanner: MetadataScanner,
     private readonly moduleRef: ModuleRef,
     private readonly eventEmitterReadinessWatcher: EventEmitterReadinessWatcher,
+    @Optional()
+    @Inject(EVENT_EMITTER_MODULE_OPTIONS)
+    private readonly options: EventEmitterModuleOptions = {},
   ) {}
 
   onApplicationBootstrap() {
@@ -138,9 +144,15 @@ export class EventSubscribersLoader
       event,
       async (...args: unknown[]) => {
         const request = this.getRequestFromEventPayload(args);
-        const contextId = ContextIdFactory.getByRequest<
-          EventPayloadHost<unknown>
-        >({ payload: request });
+        // When `inheritRequestContextId` is enabled, resolve the context id
+        // directly from the original request so that listeners emitted within
+        // an existing request scope reuse the same dependency tree (#1622).
+        // Otherwise, preserve the original wrapper-based behavior.
+        const contextId = this.options.inheritRequestContextId
+          ? ContextIdFactory.getByRequest(request as Record<string, unknown>)
+          : ContextIdFactory.getByRequest<EventPayloadHost<unknown>>({
+              payload: request,
+            });
 
         this.moduleRef.registerRequestByContextId(request, contextId);
 
