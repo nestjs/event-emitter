@@ -1,11 +1,11 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { EventEmitter2 } from 'eventemitter2';
-import { EVENT_EMITTER_MODULE_OPTIONS } from './constants';
-import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher';
-import { EventSubscribersLoader } from './event-subscribers.loader';
-import { EventsMetadataAccessor } from './events-metadata.accessor';
-import { EventEmitterModuleOptions } from './interfaces';
+import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
+import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
+import { EventSubscribersLoader } from './event-subscribers.loader.js';
+import { EventsMetadataAccessor } from './events-metadata.accessor.js';
+import { EventEmitterModuleOptions } from './interfaces/index.js';
 
 /**
  * @publicApi
