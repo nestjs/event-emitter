@@ -1,7 +1,7 @@
 import { Injectable, Type } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EVENT_LISTENER_METADATA } from './constants';
-import { OnEventMetadata } from './decorators';
+import { EVENT_LISTENER_METADATA } from './constants.js';
+import { OnEventMetadata } from './decorators/index.js';
 
 @Injectable()
 export class EventsMetadataAccessor {
