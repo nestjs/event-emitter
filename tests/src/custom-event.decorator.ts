@@ -1,9 +1,8 @@
 import { SetMetadata } from '@nestjs/common';
 
-import { OnEventMetadata } from '../../lib';
-import { EVENT_LISTENER_METADATA } from '../../lib/constants';
+import { EVENT_LISTENER_METADATA, OnEventMetadata } from '../../lib/index.js';
 
-import type { OnEventOptions } from '../../lib/interfaces';
+import type { OnEventOptions } from '../../lib/index.js';
 
 export const CustomEvent = (event: string, options?: OnEventOptions) =>
   SetMetadata(EVENT_LISTENER_METADATA, {

@@ -7,10 +7,10 @@ import {
   Scope,
 } from '@nestjs/common';
 import { ContextIdFactory, createContextId, REQUEST } from '@nestjs/core';
-import { REQUEST_CONTEXT_ID } from '@nestjs/core/router/request/request-constants';
+import { REQUEST_CONTEXT_ID } from '@nestjs/core/router/request/request-constants.js';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
-import { EventEmitterModule, OnEvent } from '../../lib';
+import { EventEmitterModule, OnEvent } from '../../lib/index.js';
 
 @Injectable({ scope: Scope.REQUEST })
 class RequestScopedListener {
@@ -140,9 +140,11 @@ describe('EventEmitterModule - inheritRequestContextId', () => {
   });
 
   it('inheritRequestContextId=true: passes original request to context id strategy', async () => {
-    const sharedContextId = { id: Symbol('shared') };
+    const sharedContextId = createContextId();
     const attachSpy = vi.fn(
-      contextId => info => (info.isTreeDurable ? sharedContextId : contextId),
+      (contextId: ReturnType<typeof createContextId>, request: unknown) =>
+        (info: { isTreeDurable: boolean }) =>
+          info.isTreeDurable ? sharedContextId : contextId,
     );
     ContextIdFactory.apply({
       attach: attachSpy,
@@ -159,7 +161,8 @@ describe('EventEmitterModule - inheritRequestContextId', () => {
     app.get(EventEmitter2).emit('inherit.test', payload);
 
     expect(attachSpy).toHaveBeenCalled();
-    expect(attachSpy.mock.calls[0][1]).toBe(payload);
+    const [, request] = attachSpy.mock.calls[0];
+    expect(request).toBe(payload);
 
     await app.close();
   });
