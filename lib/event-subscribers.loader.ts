@@ -12,15 +12,18 @@ import {
   MetadataScanner,
   ModuleRef,
 } from '@nestjs/core';
-import { Injector } from '@nestjs/core/injector/injector';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { Module } from '@nestjs/core/injector/module';
+import { Injector } from '@nestjs/core/injector/injector.js';
+import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper.js';
+import { Module } from '@nestjs/core/injector/module.js';
 import { EventEmitter2 } from 'eventemitter2';
-import { EVENT_EMITTER_MODULE_OPTIONS } from './constants';
-import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher';
-import { EventsMetadataAccessor } from './events-metadata.accessor';
-import { EventEmitterModuleOptions, OnEventOptions } from './interfaces';
-import { EventPayloadHost } from './interfaces/event-payload-host.interface';
+import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
+import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
+import { EventsMetadataAccessor } from './events-metadata.accessor.js';
+import {
+  EventEmitterModuleOptions,
+  OnEventOptions,
+} from './interfaces/index.js';
+import { EventPayloadHost } from './interfaces/event-payload-host.interface.js';
 
 @Injectable()
 export class EventSubscribersLoader

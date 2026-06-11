@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
-import { OnEvent } from '../../lib';
-import { EVENT_PAYLOAD } from '../../lib';
-import { RequestScopedEventPayload } from './request-scoped-event-payload';
+import { EVENT_PAYLOAD, OnEvent } from '../../lib/index.js';
+import { RequestScopedEventPayload } from './request-scoped-event-payload.js';
 
 @Injectable({ scope: Scope.REQUEST, durable: true })
 export class EventsProviderDurableRequestScopedConsumer {

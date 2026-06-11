@@ -1,6 +1,6 @@
-import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util';
-import { EVENT_LISTENER_METADATA } from '../constants';
-import { OnEventOptions } from '../interfaces';
+import { extendArrayMetadata } from '@nestjs/common/utils/extend-metadata.util.js';
+import { EVENT_LISTENER_METADATA } from '../constants.js';
+import { OnEventOptions } from '../interfaces/index.js';
 
 /**
  * `@OnEvent` decorator metadata
