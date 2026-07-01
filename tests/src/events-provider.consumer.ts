@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '../../lib';
+import { OnEvent } from '../../lib/index.js';
 
 @Injectable()
 export class EventsProviderConsumer {

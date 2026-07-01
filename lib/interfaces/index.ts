@@ -1,3 +1,3 @@
-export * from './event-emitter-options.interface';
-export * from './on-event-options.interface';
-export * from './event-payload-host.interface';
+export * from './event-emitter-options.interface.js';
+export * from './on-event-options.interface.js';
+export * from './event-payload-host.interface.js';
