@@ -15,8 +15,8 @@ import {
 import { Injector } from '@nestjs/core/injector/injector.js';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper.js';
 import { Module } from '@nestjs/core/injector/module.js';
-import { EventEmitter2 } from 'eventemitter2';
 import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
+import { EventEmitter2 } from './eventemitter2.js';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
 import { EventsMetadataAccessor } from './events-metadata.accessor.js';
 import {

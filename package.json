@@ -8,6 +8,16 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "rimraf -rf dist && tsc -p tsconfig.build.json",
     "format": "prettier --write \"{lib,test}/**/*.ts\"",
@@ -17,6 +27,7 @@
     "prepublish:next": "npm run build",
     "publish:next": "npm publish --access public --tag next",
     "test:e2e": "vitest run",
+    "test:smoke": "node tests/smoke/import-esm.js && node tests/smoke/require-cjs.cjs",
     "prerelease": "npm run build",
     "release": "release-it",
     "prepare": "husky install"
