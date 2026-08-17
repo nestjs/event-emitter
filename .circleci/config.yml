@@ -32,6 +32,9 @@ jobs:
       - run:
           name: Build
           command: npm run build
+      - run:
+          name: Smoke test built package
+          command: npm run test:smoke
 
   integration_tests:
     working_directory: ~/nest

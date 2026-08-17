@@ -3,22 +3,22 @@ import { INestApplication } from '@nestjs/common';
 import { ContextIdFactory, createContextId } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
-import { EventEmitterReadinessWatcher } from '../../lib';
-import { AppModule } from '../src/app.module';
+import { EventEmitterReadinessWatcher } from '../../lib/index.js';
+import { AppModule } from '../src/app.module.js';
 import {
   TEST_EVENT_MULTIPLE_PAYLOAD,
   TEST_EVENT_PAYLOAD,
   TEST_EVENT_STRING_PAYLOAD,
-} from '../src/constants';
-import { CUSTOM_DECORATOR_EVENT } from '../src/custom-decorator-test.constants';
-import { CustomEventDecoratorConsumer } from '../src/custom-decorator-test.consumer';
-import { EventsControllerConsumer } from '../src/events-controller.consumer';
-import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer';
-import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer';
-import { EventsProviderConsumer } from '../src/events-provider.consumer';
-import { EventsProviderDurableRequestScopedConsumer } from '../src/events-provider.durable-request-scoped.consumer';
-import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer';
-import { TEST_PROVIDER_TOKEN } from '../src/test-provider';
+} from '../src/constants.js';
+import { CUSTOM_DECORATOR_EVENT } from '../src/custom-decorator-test.constants.js';
+import { CustomEventDecoratorConsumer } from '../src/custom-decorator-test.consumer.js';
+import { EventsControllerConsumer } from '../src/events-controller.consumer.js';
+import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer.js';
+import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer.js';
+import { EventsProviderConsumer } from '../src/events-provider.consumer.js';
+import { EventsProviderDurableRequestScopedConsumer } from '../src/events-provider.durable-request-scoped.consumer.js';
+import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer.js';
+import { TEST_PROVIDER_TOKEN } from '../src/test-provider.js';
 
 describe('EventEmitterModule - e2e', () => {
   let app: INestApplication;

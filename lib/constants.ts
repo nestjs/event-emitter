@@ -1,5 +1,11 @@
 import { REQUEST } from '@nestjs/core';
 
+/**
+ * Metadata key used by `@OnEvent`. Exported so that custom decorators can
+ * produce listener metadata the loader understands.
+ *
+ * @publicApi
+ */
 export const EVENT_LISTENER_METADATA = 'EVENT_LISTENER_METADATA';
 export const EVENT_PAYLOAD = REQUEST;
 export const EVENT_EMITTER_MODULE_OPTIONS = Symbol(

@@ -4,7 +4,7 @@ import {
   TEST_EVENT_MULTIPLE_PAYLOAD,
   TEST_EVENT_PAYLOAD,
   TEST_EVENT_STRING_PAYLOAD,
-} from './constants';
+} from './constants.js';
 
 @Injectable()
 export class EventsProducer implements OnApplicationBootstrap {

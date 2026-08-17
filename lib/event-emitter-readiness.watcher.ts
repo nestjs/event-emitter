@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { promiseWithResolvers } from './utils/promise-with-resolvers';
+import { promiseWithResolvers } from './utils/promise-with-resolvers.js';
 
 @Injectable()
 export class EventEmitterReadinessWatcher {
