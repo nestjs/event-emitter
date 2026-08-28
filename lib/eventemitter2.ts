@@ -7,5 +7,5 @@ import eventemitter2 from 'eventemitter2';
  * export instead, which is re-exported here so the rest of the codebase can
  * keep using `EventEmitter2` as both a value and a type.
  */
-export const EventEmitter2 = eventemitter2.EventEmitter2;
+export const EventEmitter2 = eventemitter2;
 export type EventEmitter2 = InstanceType<typeof EventEmitter2>;
