@@ -14,5 +14,6 @@ import type { EventEmitter2 as EventEmitter2Class } from 'eventemitter2';
  * import to the class itself rather than to the `module.exports` namespace, so
  * that inferred type collapses to `any` for them.
  */
-export const EventEmitter2: typeof EventEmitter2Class = eventemitter2.EventEmitter2;
+export const EventEmitter2: typeof EventEmitter2Class =
+  eventemitter2.EventEmitter2;
 export type EventEmitter2 = EventEmitter2Class;

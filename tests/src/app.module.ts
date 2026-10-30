@@ -4,6 +4,7 @@ import { CustomEventDecoratorConsumer } from './custom-decorator-test.consumer.j
 import { EventsControllerConsumer } from './events-controller.consumer.js';
 import { EventsProviderAliasedConsumer } from './events-provider-aliased.consumer.js';
 import { EventsProviderPrependConsumer } from './events-provider-prepend.consumer.js';
+import { EventsProviderPriorityConsumer } from './events-provider-priority.consumer.js';
 import { EventsProviderConsumer } from './events-provider.consumer.js';
 import { EventsProviderDurableRequestScopedConsumer } from './events-provider.durable-request-scoped.consumer.js';
 import { EventsProviderRequestScopedConsumer } from './events-provider.request-scoped.consumer.js';
@@ -20,6 +21,7 @@ import { TestProvider } from './test-provider.js';
   providers: [
     EventsProviderConsumer,
     EventsProviderPrependConsumer,
+    EventsProviderPriorityConsumer,
     EventsProducer,
     TestProvider,
     EventsProviderRequestScopedConsumer,

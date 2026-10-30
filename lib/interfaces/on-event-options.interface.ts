@@ -21,4 +21,17 @@ export type OnEventOptions = OnOptions & {
    * @default true
    */
   suppressErrors?: boolean;
+
+  /**
+   * Listener priority. Higher values run first. Listeners that share a
+   * priority run in parallel, and a group finishes before the next lower
+   * priority starts. Listeners that omit this option use priority `1`.
+   *
+   * `emitAsync()` resolves with listener results ordered from the highest
+   * priority to the lowest. `async`, `promisify`, and `nextTick` still defer
+   * listeners when no listener on the emission sets `priority`.
+   *
+   * @default 1
+   */
+  priority?: number;
 };

@@ -17,6 +17,7 @@ import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper.js';
 import { Module } from '@nestjs/core/injector/module.js';
 import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
 import { EventEmitter2 } from './eventemitter2.js';
+import { PrioritizedEventEmitter } from './prioritized-event-emitter.js';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
 import { EventsMetadataAccessor } from './events-metadata.accessor.js';
 import {
@@ -105,16 +106,17 @@ export class EventSubscribersLoader
           options,
         });
       } else {
-        listenerMethod(
-          event,
-          (...args: unknown[]) =>
+        // Timing options are applied by the prioritized emitter so every
+        // `@OnEvent` listener can join the same emission and be ordered.
+        listenerMethod(event, (...args: unknown[]) =>
+          this.captureListener(options, false, () =>
             this.wrapFunctionInTryCatchBlocks(
               instance,
               methodKey,
               args,
               options,
             ),
-          options,
+          ),
         );
       }
     }
@@ -143,9 +145,8 @@ export class EventSubscribersLoader
       options,
     } = eventListenerContext;
 
-    listenerMethod(
-      event,
-      async (...args: unknown[]) => {
+    listenerMethod(event, (...args: unknown[]) =>
+      this.captureListener(options, true, async () => {
         const request = this.getRequestFromEventPayload(args);
         // When `inheritRequestContextId` is enabled, resolve the context id
         // directly from the original request so that listeners emitted within
@@ -171,9 +172,19 @@ export class EventSubscribersLoader
           args,
           options,
         );
-      },
-      options,
+      }),
     );
+  }
+
+  private captureListener(
+    options: OnEventOptions | undefined,
+    listenerIsAsync: boolean,
+    fn: () => unknown,
+  ): unknown {
+    if (this.eventEmitter instanceof PrioritizedEventEmitter) {
+      return this.eventEmitter.runListener(options, listenerIsAsync, fn);
+    }
+    return fn();
   }
 
   private getRequestFromEventPayload(eventPayload: unknown[]): unknown {
@@ -194,21 +205,43 @@ export class EventSubscribersLoader
     return eventPayload.length > 1 ? eventPayload : eventPayload[0];
   }
 
-  private async wrapFunctionInTryCatchBlocks(
+  private wrapFunctionInTryCatchBlocks(
     instance: Record<string, (...args: unknown[]) => unknown>,
     methodKey: string,
     args: unknown[],
     options?: OnEventOptions,
-  ) {
+  ): unknown {
     try {
-      return await instance[methodKey].call(instance, ...args);
-    } catch (e) {
-      if (options?.suppressErrors ?? true) {
-        const error = e as Error;
-        this.logger.error(error.message, error.stack);
-      } else {
-        throw e;
+      const result = instance[methodKey].call(instance, ...args);
+      if (isPromise(result)) {
+        return result.then(
+          value => value,
+          (error: unknown) => this.handleListenerError(error, options),
+        );
       }
+      return result;
+    } catch (error) {
+      return this.handleListenerError(error, options);
     }
   }
+
+  private handleListenerError(
+    error: unknown,
+    options?: OnEventOptions,
+  ): unknown {
+    if (options?.suppressErrors ?? true) {
+      const exception = error as Error;
+      this.logger.error(exception.message, exception.stack);
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+function isPromise(value: unknown): value is Promise<unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Promise<unknown>).then === 'function'
+  );
 }

@@ -15,6 +15,7 @@ import { CustomEventDecoratorConsumer } from '../src/custom-decorator-test.consu
 import { EventsControllerConsumer } from '../src/events-controller.consumer.js';
 import { EventsProviderAliasedConsumer } from '../src/events-provider-aliased.consumer.js';
 import { EventsProviderPrependConsumer } from '../src/events-provider-prepend.consumer.js';
+import { EventsProviderPriorityConsumer } from '../src/events-provider-priority.consumer.js';
 import { EventsProviderConsumer } from '../src/events-provider.consumer.js';
 import { EventsProviderDurableRequestScopedConsumer } from '../src/events-provider.durable-request-scoped.consumer.js';
 import { EventsProviderRequestScopedConsumer } from '../src/events-provider.request-scoped.consumer.js';
@@ -84,6 +85,13 @@ describe('EventEmitterModule - e2e', () => {
     await app.init();
 
     expect(eventsConsumerRef.eventPayload).toEqual(TEST_EVENT_PAYLOAD);
+  });
+
+  it('should run listeners from the highest priority to the lowest', async () => {
+    const eventsConsumerRef = app.get(EventsProviderPriorityConsumer);
+    await app.init();
+
+    expect(eventsConsumerRef.calls).toEqual(['high', 'normal', 'low']);
   });
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {
