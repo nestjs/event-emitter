@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { INestApplication, Injectable } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
@@ -6,81 +7,87 @@ import { EventEmitterModule, OnEvent } from '../../lib/index.js';
 @Injectable()
 class PriorityListener {
   readonly calls: string[] = [];
-  gate: Promise<void> = Promise.resolve();
 
-  @OnEvent('ordered', { priority: 0 })
-  low() {
-    this.calls.push('low');
+  constructor(private readonly eventEmitter: EventEmitter2) {
+    this.eventEmitter.on('direct.event', () => {
+      this.calls.push('direct');
+    });
   }
 
-  @OnEvent('ordered', { priority: 10 })
-  high(payload: string) {
-    this.calls.push(`high:${payload}`);
+  @OnEvent('ordered', { priority: -5 })
+  negative() {
+    this.calls.push('negative');
   }
 
   @OnEvent('ordered')
-  normal() {
-    this.calls.push('normal');
+  normal(payload: string) {
+    this.calls.push(`normal:${payload}`);
   }
 
-  @OnEvent('staged', { priority: 10 })
-  async first() {
-    this.calls.push('first:start');
-    await this.gate;
-    this.calls.push('first:end');
+  @OnEvent('ordered', { priority: 10 })
+  high() {
+    this.calls.push('high');
   }
 
-  @OnEvent('staged')
-  last() {
-    this.calls.push('last');
+  @OnEvent('ties')
+  first() {
+    this.calls.push('first');
   }
 
-  @OnEvent('parallel', { priority: 3 })
-  async parallelA() {
-    this.calls.push('a:start');
-    await this.gate;
-    this.calls.push('a:end');
+  @OnEvent('ties')
+  second() {
+    this.calls.push('second');
   }
 
-  @OnEvent('parallel', { priority: 3 })
-  parallelB() {
-    this.calls.push('b:start');
-    this.calls.push('b:end');
+  @OnEvent('prepend.event', { prependListener: true, priority: -1 })
+  prependLow() {
+    this.calls.push('prepend-low');
   }
 
-  @OnEvent('parallel')
-  afterParallel() {
-    this.calls.push('after');
+  @OnEvent('prepend.event', { prependListener: true, priority: 5 })
+  prependHigh() {
+    this.calls.push('prepend-high');
   }
 
-  @OnEvent('results', { priority: 1 })
-  resultLow() {
-    return 'low';
+  @OnEvent('prepend.event', { priority: 100 })
+  appended() {
+    this.calls.push('appended');
   }
 
-  @OnEvent('results', { priority: 8 })
-  resultHigh() {
-    return 'high';
+  @OnEvent('direct.event', { priority: 50 })
+  directHigh() {
+    this.calls.push('on-event');
   }
 
-  @OnEvent('wild.*', { priority: 4 })
-  onWildcard(payload: string) {
-    this.calls.push(`wild:${payload}`);
+  @OnEvent('user.*', { priority: 100 })
+  wildcard() {
+    this.calls.push('wildcard');
   }
 
-  @OnEvent('failing', { priority: 4, suppressErrors: false })
-  fail() {
-    throw new Error('priority failed');
+  @OnEvent('user.login', { priority: -5 })
+  exact() {
+    this.calls.push('exact');
   }
 
-  @OnEvent('failing')
-  afterFail() {
-    this.calls.push('after-fail');
+  @OnEvent('login', { priority: 10, suppressErrors: false })
+  checkFraud() {
+    this.calls.push('check');
+    throw new Error('blocked');
   }
 
-  @OnEvent('deferred', { async: true })
+  @OnEvent('login')
+  issueToken() {
+    this.calls.push('token');
+  }
+
+  @OnEvent('timing', { async: true, priority: 5 })
   deferred() {
     this.calls.push('deferred');
+  }
+
+  @OnEvent('timing')
+  immediate() {
+    this.calls.push('immediate');
   }
 }
 
@@ -109,90 +116,85 @@ describe('EventEmitterModule - listener priority', () => {
     await app?.close();
   });
 
-  it('runs listeners from the highest priority to the lowest', async () => {
+  it('runs a positive priority before the default and a negative one after', async () => {
     const { emitter, listener } = await init();
 
     emitter.emit('ordered', 'payload');
 
-    expect(listener.calls).toEqual(['high:payload', 'normal', 'low']);
+    expect(listener.calls).toEqual(['high', 'normal:payload', 'negative']);
   });
 
-  it('waits for a higher priority group before starting a lower one', async () => {
-    const { emitter, listener } = await init();
-    let releaseGate!: () => void;
-    listener.gate = new Promise(resolve => {
-      releaseGate = resolve;
-    });
-
-    const pending = emitter.emitAsync('staged');
-
-    expect(listener.calls).toEqual(['first:start']);
-
-    releaseGate();
-    await pending;
-
-    expect(listener.calls).toEqual(['first:start', 'first:end', 'last']);
-  });
-
-  it('runs listeners that share a priority in parallel', async () => {
-    const { emitter, listener } = await init();
-    let releaseGate!: () => void;
-    listener.gate = new Promise(resolve => {
-      releaseGate = resolve;
-    });
-
-    const pending = emitter.emitAsync('parallel');
-
-    expect(listener.calls).toEqual(['a:start', 'b:start', 'b:end']);
-
-    releaseGate();
-    await pending;
-
-    expect(listener.calls).toEqual([
-      'a:start',
-      'b:start',
-      'b:end',
-      'a:end',
-      'after',
-    ]);
-  });
-
-  it('resolves emitAsync with results ordered by priority', async () => {
-    const { emitter } = await init();
-
-    await expect(emitter.emitAsync('results')).resolves.toEqual([
-      'high',
-      'low',
-    ]);
-  });
-
-  it('matches wildcard listeners by priority', async () => {
+  it('keeps discovery order when priorities are equal', async () => {
     const { emitter, listener } = await init();
 
-    emitter.emit('wild.card', 'payload');
+    emitter.emit('ties');
 
-    expect(listener.calls).toEqual(['wild:payload']);
+    expect(listener.calls).toEqual(['first', 'second']);
   });
 
-  it('does not run a lower priority when a higher one fails', async () => {
+  it('keeps prepended listeners ahead and orders that group by priority', async () => {
     const { emitter, listener } = await init();
 
-    await expect(emitter.emitAsync('failing')).rejects.toThrow(
-      'priority failed',
-    );
-    expect(listener.calls).not.toContain('after-fail');
+    emitter.emit('prepend.event');
+
+    expect(listener.calls).toEqual(['prepend-high', 'prepend-low', 'appended']);
   });
 
-  it('still defers listeners configured with async when priority is omitted', async () => {
+  it('does not move an @OnEvent listener ahead of a direct listener', async () => {
     const { emitter, listener } = await init();
 
-    emitter.emit('deferred');
-    expect(listener.calls).not.toContain('deferred');
+    emitter.emit('direct.event');
+
+    expect(listener.calls).toEqual(['direct', 'on-event']);
+  });
+
+  it('does not order a wildcard listener against an exact event name', async () => {
+    const { emitter, listener } = await init();
+
+    emitter.emit('user.login');
+
+    expect(listener.calls).toEqual(['exact', 'wildcard']);
+  });
+
+  it('still calls the next listener when a higher priority one rejects', async () => {
+    const { emitter, listener } = await init();
+
+    await expect(emitter.emitAsync('login')).rejects.toThrow('blocked');
+    expect(listener.calls).toEqual(['check', 'token']);
+  });
+
+  it('still defers async listeners when priority is set', async () => {
+    const { emitter, listener } = await init();
+
+    emitter.emit('timing');
+    expect(listener.calls).toEqual(['immediate']);
 
     await new Promise<void>(resolve => {
       setImmediate(resolve);
     });
 
-    expect(listener.calls).toEqual(['deferred']);
+    expect(listener.calls).toEqual(['immediate', 'deferred']);
+  });
+
+  it('forwards listener options when EventEmitter2 is overridden', async () => {
+    const emitter = new EventEmitter2();
+    const onSpy = vi.spyOn(emitter, 'on');
+    const moduleRef = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot()],
+      providers: [PriorityListener],
+    })
+      .overrideProvider(EventEmitter2)
+      .useValue(emitter)
+      .compile();
+    const overriddenApp = moduleRef.createNestApplication();
+
+    await overriddenApp.init();
+
+    expect(onSpy).toHaveBeenCalledWith(
+      'timing',
+      expect.any(Function),
+      expect.objectContaining({ async: true, priority: 5 }),
+    );
+    await overriddenApp.close();
   });
 });

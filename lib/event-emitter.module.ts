@@ -2,7 +2,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
 import { EventEmitter2 } from './eventemitter2.js';
-import { PrioritizedEventEmitter } from './prioritized-event-emitter.js';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
 import { EventSubscribersLoader } from './event-subscribers.loader.js';
 import { EventsMetadataAccessor } from './events-metadata.accessor.js';
@@ -28,7 +27,7 @@ export class EventEmitterModule {
         },
         {
           provide: EventEmitter2,
-          useFactory: () => new PrioritizedEventEmitter(options),
+          useFactory: () => new EventEmitter2(options),
         },
       ],
       exports: [EventEmitter2, EventEmitterReadinessWatcher],

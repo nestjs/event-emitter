@@ -5,18 +5,18 @@ import { OnEvent } from '../../lib/index.js';
 export class EventsProviderPriorityConsumer {
   public calls: string[] = [];
 
-  @OnEvent('priority.event', { priority: 0 })
-  low() {
-    this.calls.push('low');
-  }
-
-  @OnEvent('priority.event', { priority: 10 })
-  high() {
-    this.calls.push('high');
+  @OnEvent('priority.event', { priority: -1 })
+  negative() {
+    this.calls.push('negative');
   }
 
   @OnEvent('priority.event')
   normal() {
     this.calls.push('normal');
+  }
+
+  @OnEvent('priority.event', { priority: 10 })
+  high() {
+    this.calls.push('high');
   }
 }

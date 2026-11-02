@@ -15,9 +15,11 @@ import {
 import { Injector } from '@nestjs/core/injector/injector.js';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper.js';
 import { Module } from '@nestjs/core/injector/module.js';
-import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
+import {
+  DEFAULT_LISTENER_PRIORITY,
+  EVENT_EMITTER_MODULE_OPTIONS,
+} from './constants.js';
 import { EventEmitter2 } from './eventemitter2.js';
-import { PrioritizedEventEmitter } from './prioritized-event-emitter.js';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
 import { EventsMetadataAccessor } from './events-metadata.accessor.js';
 import {
@@ -25,6 +27,7 @@ import {
   OnEventOptions,
 } from './interfaces/index.js';
 import { EventPayloadHost } from './interfaces/event-payload-host.interface.js';
+import { EventSubscription } from './interfaces/event-subscription.interface.js';
 
 @Injectable()
 export class EventSubscribersLoader
@@ -59,6 +62,7 @@ export class EventSubscribersLoader
   }
 
   loadEventListeners() {
+    const subscriptions: EventSubscription[] = [];
     const providers = this.discoveryService.getProviders();
     const controllers = this.discoveryService.getControllers();
     [...providers, ...controllers]
@@ -75,9 +79,11 @@ export class EventSubscribersLoader
               methodKey,
               isRequestScoped,
               wrapper.host as Module,
+              subscriptions,
             ),
           );
       });
+    this.registerSubscriptions(subscriptions);
   }
 
   private subscribeToEventIfListener(
@@ -85,6 +91,7 @@ export class EventSubscribersLoader
     methodKey: string,
     isRequestScoped: boolean,
     moduleRef: Module,
+    subscriptions: EventSubscription[],
   ) {
     const eventListenerMetadatas =
       this.metadataAccessor.getEventHandlerMetadata(instance[methodKey]);
@@ -94,32 +101,74 @@ export class EventSubscribersLoader
 
     for (const eventListenerMetadata of eventListenerMetadatas) {
       const { event, options } = eventListenerMetadata;
-      const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
+      subscriptions.push({
+        priority: this.listenerPriority(options),
+        prepend: options?.prependListener ?? false,
+        order: subscriptions.length,
+        register: () => {
+          const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
 
-      if (isRequestScoped) {
-        this.registerRequestScopedListener({
-          event,
-          eventListenerInstance: instance,
-          listenerMethod,
-          listenerMethodKey: methodKey,
-          moduleRef,
-          options,
-        });
-      } else {
-        // Timing options are applied by the prioritized emitter so every
-        // `@OnEvent` listener can join the same emission and be ordered.
-        listenerMethod(event, (...args: unknown[]) =>
-          this.captureListener(options, false, () =>
-            this.wrapFunctionInTryCatchBlocks(
-              instance,
-              methodKey,
-              args,
+          if (isRequestScoped) {
+            this.registerRequestScopedListener({
+              event,
+              eventListenerInstance: instance,
+              listenerMethod,
+              listenerMethodKey: methodKey,
+              moduleRef,
               options,
-            ),
-          ),
-        );
-      }
+            });
+            return;
+          }
+
+          listenerMethod(
+            event,
+            (...args: unknown[]) =>
+              this.wrapFunctionInTryCatchBlocks(
+                instance,
+                methodKey,
+                args,
+                options,
+              ),
+            options,
+          );
+        },
+      });
     }
+  }
+
+  /**
+   * Registers every `@OnEvent` listener after sorting.
+   * `prependListener` inserts at the front, so that group is registered from
+   * the lowest priority to the highest. The other group is registered from
+   * the highest priority to the lowest. Ties keep discovery order.
+   */
+  private registerSubscriptions(subscriptions: EventSubscription[]) {
+    const prepended = subscriptions.filter(item => item.prepend);
+    const appended = subscriptions.filter(item => !item.prepend);
+
+    prepended.sort(
+      (left, right) =>
+        left.priority - right.priority || right.order - left.order,
+    );
+    appended.sort(
+      (left, right) =>
+        right.priority - left.priority || left.order - right.order,
+    );
+
+    for (const subscription of prepended) {
+      subscription.register();
+    }
+    for (const subscription of appended) {
+      subscription.register();
+    }
+  }
+
+  private listenerPriority(options?: OnEventOptions): number {
+    const priority = options?.priority;
+    if (typeof priority === 'number' && Number.isFinite(priority)) {
+      return priority;
+    }
+    return DEFAULT_LISTENER_PRIORITY;
   }
 
   private getRegisterListenerMethodBasedOn(options?: OnEventOptions) {
@@ -145,8 +194,9 @@ export class EventSubscribersLoader
       options,
     } = eventListenerContext;
 
-    listenerMethod(event, (...args: unknown[]) =>
-      this.captureListener(options, true, async () => {
+    listenerMethod(
+      event,
+      async (...args: unknown[]) => {
         const request = this.getRequestFromEventPayload(args);
         // When `inheritRequestContextId` is enabled, resolve the context id
         // directly from the original request so that listeners emitted within
@@ -172,19 +222,9 @@ export class EventSubscribersLoader
           args,
           options,
         );
-      }),
+      },
+      options,
     );
-  }
-
-  private captureListener(
-    options: OnEventOptions | undefined,
-    listenerIsAsync: boolean,
-    fn: () => unknown,
-  ): unknown {
-    if (this.eventEmitter instanceof PrioritizedEventEmitter) {
-      return this.eventEmitter.runListener(options, listenerIsAsync, fn);
-    }
-    return fn();
   }
 
   private getRequestFromEventPayload(eventPayload: unknown[]): unknown {
@@ -205,43 +245,21 @@ export class EventSubscribersLoader
     return eventPayload.length > 1 ? eventPayload : eventPayload[0];
   }
 
-  private wrapFunctionInTryCatchBlocks(
+  private async wrapFunctionInTryCatchBlocks(
     instance: Record<string, (...args: unknown[]) => unknown>,
     methodKey: string,
     args: unknown[],
     options?: OnEventOptions,
-  ): unknown {
+  ) {
     try {
-      const result = instance[methodKey].call(instance, ...args);
-      if (isPromise(result)) {
-        return result.then(
-          value => value,
-          (error: unknown) => this.handleListenerError(error, options),
-        );
+      return await instance[methodKey].call(instance, ...args);
+    } catch (e) {
+      if (options?.suppressErrors ?? true) {
+        const error = e as Error;
+        this.logger.error(error.message, error.stack);
+      } else {
+        throw e;
       }
-      return result;
-    } catch (error) {
-      return this.handleListenerError(error, options);
     }
   }
-
-  private handleListenerError(
-    error: unknown,
-    options?: OnEventOptions,
-  ): unknown {
-    if (options?.suppressErrors ?? true) {
-      const exception = error as Error;
-      this.logger.error(exception.message, exception.stack);
-      return undefined;
-    }
-    throw error;
-  }
-}
-
-function isPromise(value: unknown): value is Promise<unknown> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as Promise<unknown>).then === 'function'
-  );
 }

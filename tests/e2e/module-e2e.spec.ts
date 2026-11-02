@@ -91,7 +91,7 @@ describe('EventEmitterModule - e2e', () => {
     const eventsConsumerRef = app.get(EventsProviderPriorityConsumer);
     await app.init();
 
-    expect(eventsConsumerRef.calls).toEqual(['high', 'normal', 'low']);
+    expect(eventsConsumerRef.calls).toEqual(['high', 'normal', 'negative']);
   });
 
   it('should be able to specify a consumer be prepended via OnEvent decorator options', async () => {

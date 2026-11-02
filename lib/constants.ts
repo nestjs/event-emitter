@@ -11,3 +11,8 @@ export const EVENT_PAYLOAD = REQUEST;
 export const EVENT_EMITTER_MODULE_OPTIONS = Symbol(
   'EVENT_EMITTER_MODULE_OPTIONS',
 );
+
+/**
+ * Priority used when `@OnEvent()` omits `priority`, or the value is not a finite number.
+ */
+export const DEFAULT_LISTENER_PRIORITY = 0;
