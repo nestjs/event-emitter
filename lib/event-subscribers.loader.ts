@@ -15,7 +15,10 @@ import {
 import { Injector } from '@nestjs/core/injector/injector.js';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper.js';
 import { Module } from '@nestjs/core/injector/module.js';
-import { EVENT_EMITTER_MODULE_OPTIONS } from './constants.js';
+import {
+  DEFAULT_LISTENER_PRIORITY,
+  EVENT_EMITTER_MODULE_OPTIONS,
+} from './constants.js';
 import { EventEmitter2 } from './eventemitter2.js';
 import { EventEmitterReadinessWatcher } from './event-emitter-readiness.watcher.js';
 import { EventsMetadataAccessor } from './events-metadata.accessor.js';
@@ -24,6 +27,7 @@ import {
   OnEventOptions,
 } from './interfaces/index.js';
 import { EventPayloadHost } from './interfaces/event-payload-host.interface.js';
+import { EventSubscription } from './interfaces/event-subscription.interface.js';
 
 @Injectable()
 export class EventSubscribersLoader
@@ -58,6 +62,7 @@ export class EventSubscribersLoader
   }
 
   loadEventListeners() {
+    const subscriptions: EventSubscription[] = [];
     const providers = this.discoveryService.getProviders();
     const controllers = this.discoveryService.getControllers();
     [...providers, ...controllers]
@@ -74,9 +79,11 @@ export class EventSubscribersLoader
               methodKey,
               isRequestScoped,
               wrapper.host as Module,
+              subscriptions,
             ),
           );
       });
+    this.registerSubscriptions(subscriptions);
   }
 
   private subscribeToEventIfListener(
@@ -84,6 +91,7 @@ export class EventSubscribersLoader
     methodKey: string,
     isRequestScoped: boolean,
     moduleRef: Module,
+    subscriptions: EventSubscription[],
   ) {
     const eventListenerMetadatas =
       this.metadataAccessor.getEventHandlerMetadata(instance[methodKey]);
@@ -93,31 +101,89 @@ export class EventSubscribersLoader
 
     for (const eventListenerMetadata of eventListenerMetadatas) {
       const { event, options } = eventListenerMetadata;
-      const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
+      subscriptions.push({
+        priority: this.listenerPriority(options),
+        prepend: options?.prependListener ?? false,
+        order: subscriptions.length,
+        register: () => {
+          const listenerMethod = this.getRegisterListenerMethodBasedOn(options);
 
-      if (isRequestScoped) {
-        this.registerRequestScopedListener({
-          event,
-          eventListenerInstance: instance,
-          listenerMethod,
-          listenerMethodKey: methodKey,
-          moduleRef,
-          options,
-        });
-      } else {
-        listenerMethod(
-          event,
-          (...args: unknown[]) =>
-            this.wrapFunctionInTryCatchBlocks(
-              instance,
-              methodKey,
-              args,
+          if (isRequestScoped) {
+            this.registerRequestScopedListener({
+              event,
+              eventListenerInstance: instance,
+              listenerMethod,
+              listenerMethodKey: methodKey,
+              moduleRef,
               options,
-            ),
-          options,
-        );
-      }
+            });
+            return;
+          }
+
+          listenerMethod(
+            event,
+            (...args: unknown[]) =>
+              this.wrapFunctionInTryCatchBlocks(
+                instance,
+                methodKey,
+                args,
+                options,
+              ),
+            options,
+          );
+        },
+      });
     }
+  }
+
+  /**
+   * Registers every `@OnEvent` listener after sorting. `prependListener`
+   * inserts at the front, so that group is registered from the lowest
+   * priority to the highest, and its ties are called in reverse discovery
+   * order, as they were before priorities existed. The other group is
+   * registered from the highest priority to the lowest, and its ties are
+   * called in discovery order.
+   */
+  private registerSubscriptions(subscriptions: EventSubscription[]) {
+    const prepended = subscriptions.filter(item => item.prepend);
+    const appended = subscriptions.filter(item => !item.prepend);
+
+    prepended.sort(
+      (left, right) =>
+        this.comparePriorities(left.priority, right.priority) ||
+        left.order - right.order,
+    );
+    appended.sort(
+      (left, right) =>
+        this.comparePriorities(right.priority, left.priority) ||
+        left.order - right.order,
+    );
+
+    for (const subscription of prepended) {
+      subscription.register();
+    }
+    for (const subscription of appended) {
+      subscription.register();
+    }
+  }
+
+  /**
+   * Compares without subtracting, so that two `Infinity` (or two `-Infinity`)
+   * priorities are a tie rather than `NaN`.
+   */
+  private comparePriorities(left: number, right: number): number {
+    if (left === right) {
+      return 0;
+    }
+    return left < right ? -1 : 1;
+  }
+
+  private listenerPriority(options?: OnEventOptions): number {
+    const priority = options?.priority;
+    if (typeof priority === 'number' && !Number.isNaN(priority)) {
+      return priority;
+    }
+    return DEFAULT_LISTENER_PRIORITY;
   }
 
   private getRegisterListenerMethodBasedOn(options?: OnEventOptions) {
