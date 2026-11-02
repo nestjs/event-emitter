@@ -54,6 +54,16 @@ class PriorityListener {
     this.calls.push('appended');
   }
 
+  @OnEvent('prepend.ties', { prependListener: true })
+  prependFirst() {
+    this.calls.push('prepend-first');
+  }
+
+  @OnEvent('prepend.ties', { prependListener: true })
+  prependSecond() {
+    this.calls.push('prepend-second');
+  }
+
   @OnEvent('direct.event', { priority: 50 })
   directHigh() {
     this.calls.push('on-event');
@@ -88,6 +98,36 @@ class PriorityListener {
   @OnEvent('timing')
   immediate() {
     this.calls.push('immediate');
+  }
+
+  @OnEvent('infinite', { priority: -Infinity })
+  negativeInfinity() {
+    this.calls.push('-infinity');
+  }
+
+  @OnEvent('infinite', { priority: Infinity })
+  infinityFirst() {
+    this.calls.push('infinity-first');
+  }
+
+  @OnEvent('infinite')
+  defaultPriority() {
+    this.calls.push('default');
+  }
+
+  @OnEvent('infinite', { priority: Infinity })
+  infinitySecond() {
+    this.calls.push('infinity-second');
+  }
+
+  @OnEvent('infinite', { priority: Number.NaN })
+  notANumber() {
+    this.calls.push('nan');
+  }
+
+  @OnEvent('infinite', { priority: '5' as unknown as number })
+  numericString() {
+    this.calls.push('string');
   }
 }
 
@@ -138,6 +178,29 @@ describe('EventEmitterModule - listener priority', () => {
     emitter.emit('prepend.event');
 
     expect(listener.calls).toEqual(['prepend-high', 'prepend-low', 'appended']);
+  });
+
+  it('keeps the existing reverse discovery order for prepended listeners with the same priority', async () => {
+    const { emitter, listener } = await init();
+
+    emitter.emit('prepend.ties');
+
+    expect(listener.calls).toEqual(['prepend-second', 'prepend-first']);
+  });
+
+  it('accepts infinite priorities and falls back to the default for NaN and non-numbers', async () => {
+    const { emitter, listener } = await init();
+
+    emitter.emit('infinite');
+
+    expect(listener.calls).toEqual([
+      'infinity-first',
+      'infinity-second',
+      'default',
+      'nan',
+      'string',
+      '-infinity',
+    ]);
   });
 
   it('does not move an @OnEvent listener ahead of a direct listener', async () => {

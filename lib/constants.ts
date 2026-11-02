@@ -13,6 +13,6 @@ export const EVENT_EMITTER_MODULE_OPTIONS = Symbol(
 );
 
 /**
- * Priority used when `@OnEvent()` omits `priority`, or the value is not a finite number.
+ * Priority used when `@OnEvent()` omits `priority`, or the value is `NaN` or not a number.
  */
 export const DEFAULT_LISTENER_PRIORITY = 0;
