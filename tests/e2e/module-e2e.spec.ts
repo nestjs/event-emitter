@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { ContextIdFactory, createContextId } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2 } from 'eventemitter2';
@@ -226,6 +226,40 @@ describe('EventEmitterModule - e2e', () => {
     );
 
     expect(result).toBeTruthy();
+  });
+
+  it('should log instead of rejecting when request scoped instantiation fails and suppressErrors is true', async () => {
+    await app.init();
+    const errorSpy = vi.spyOn(Logger.prototype, 'error').mockImplementation();
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+
+    try {
+      app
+        .get(EventEmitter2)
+        .emit('instantiation-error-handling-suppressed.request-scoped');
+      await new Promise(resolve => setTimeout(resolve, 50));
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+
+    expect(unhandled).toHaveLength(0);
+    expect(errorSpy).toHaveBeenCalledWith(
+      'This is a test instantiation error',
+      expect.any(String),
+    );
+    errorSpy.mockRestore();
+  });
+
+  it('should throw when request scoped instantiation fails and suppressErrors is false', async () => {
+    await app.init();
+
+    await expect(
+      app
+        .get(EventEmitter2)
+        .emitAsync('instantiation-error-throwing.request-scoped'),
+    ).rejects.toThrow('This is a test instantiation error');
   });
 
   it('should throw when an unexpected error occurs from provider and suppressErrors is false', async () => {

@@ -8,6 +8,10 @@ import { EventsProviderPriorityConsumer } from './events-provider-priority.consu
 import { EventsProviderConsumer } from './events-provider.consumer.js';
 import { EventsProviderDurableRequestScopedConsumer } from './events-provider.durable-request-scoped.consumer.js';
 import { EventsProviderRequestScopedConsumer } from './events-provider.request-scoped.consumer.js';
+import {
+  EventsProviderRequestScopedFailingConsumer,
+  FailingRequestScopedDependency,
+} from './events-provider.request-scoped-failing.consumer.js';
 import { EventsProducer } from './events.producer.js';
 import { TestProvider } from './test-provider.js';
 
@@ -25,6 +29,8 @@ import { TestProvider } from './test-provider.js';
     EventsProducer,
     TestProvider,
     EventsProviderRequestScopedConsumer,
+    FailingRequestScopedDependency,
+    EventsProviderRequestScopedFailingConsumer,
     EventsProviderDurableRequestScopedConsumer,
     EventsProviderAliasedConsumer,
     {
