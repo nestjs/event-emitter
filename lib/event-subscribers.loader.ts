@@ -225,12 +225,22 @@ export class EventSubscribersLoader
 
         this.moduleRef.registerRequestByContextId(request, contextId);
 
-        const contextInstance = await this.injector.loadPerContext(
-          eventListenerInstance,
-          moduleRef,
-          moduleRef.providers,
-          contextId,
-        );
+        let contextInstance: Record<string, (...args: unknown[]) => unknown>;
+        try {
+          contextInstance = await this.injector.loadPerContext(
+            eventListenerInstance,
+            moduleRef,
+            moduleRef.providers,
+            contextId,
+          );
+        } catch (e) {
+          if (!(options?.suppressErrors ?? true)) {
+            throw e;
+          }
+          const error = e as Error;
+          this.logger.error(error.message, error.stack);
+          return;
+        }
         return this.wrapFunctionInTryCatchBlocks(
           contextInstance,
           listenerMethodKey,
