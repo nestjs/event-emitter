@@ -1,6 +1,6 @@
 {
   "name": "@nestjs/event-emitter",
-  "version": "12.0.2",
+  "version": "12.0.3",
   "description": "In-process events for NestJS: emit events from any provider and handle them with the @OnEvent() decorator, built on EventEmitter2.",
   "keywords": [
     "nestjs",
